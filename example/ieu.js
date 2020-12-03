@@ -4,9 +4,9 @@ const { BoschIEU } = require('@johntalton/boschieu')
 const { I2CAddressedBus } = require('@johntalton/and-other-delights')
 
 const { i2cMultiPortService } = require('./service')
+const { I2CPortBus } = require('../')
 
-async function foo(port, bus) {
-  const { I2CPortBus } = require('../')
+async function ieu(port, bus) {
 
   console.log('IEU Client Worker')
   try {
@@ -31,4 +31,4 @@ async function foo(port, bus) {
 
 const mc = new MessageChannel()
 i2cMultiPortService(mc.port1)
-foo(mc.port2, 1)
+ieu(mc.port2, 1)

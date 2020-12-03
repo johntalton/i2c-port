@@ -1,0 +1,12 @@
+<html>
+ <head>
+  <script>
+  const ws = new WebSocket('ws://localhost:9000')
+  ws.onmessage = event => console.log(event)
+  ws.send(SON.stringify({ hello: 'world' }))
+  </script>
+ </head>
+ <body>
+  This is the Body
+ </body>
+</html>
