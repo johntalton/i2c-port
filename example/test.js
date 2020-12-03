@@ -1,29 +1,6 @@
 const { isMainThread, Worker, MessageChannel, workerData, parentPort } = require('worker_threads')
 
-async function i2cMultiPortService(port) {
-  const i2c = require('i2c-bus')
-  const { I2CPort } = require('../')
-
-  console.log('I2C Worker')
-
-  port.on('message', async message => {
-    console.log('I2CWorker recived client setup message')
-
-    const { bus } = message
-    const busX = await i2c.openPromisified(bus)
-
-    const { port } = message
-    port.on('message', async clientMessage => {
-      const { type, bus, address } = clientMessage
-      console.log('I2CWorker recived client action', type)
-      const result = await I2CPort.handleMessage(busX, clientMessage)
-      port.postMessage(result, result.buffer ? [ result.buffer.buffer ] : [])
-      // port.postMessage(result, [ result.buffer?.buffer ])
-    })
-    port.on('close', () => console.log('I2CWorker sais goodbye to client'))
-    port.on('messageerror', e => console.log('I2CWorker client message error', e))
-  })
-}
+const { i2cMultiPortService } = require('./service')
 
 async function basicClientService(port, bus, address) {
   console.log('Client Worker')
