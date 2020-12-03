@@ -1,52 +1,76 @@
 import { MessageChannel, MessagePort } from 'worker_threads'
 
-import * as b from '@johntalton/and-other-delights'
+import {
+  I2CBus, I2CBusNumber, I2CAddress,
+  I2CReadResult, I2CWriteResult
+} from '@johntalton/and-other-delights'
 
-export class I2CPortBus implements b.I2CBus {
+import { ReadWrite  } from './messages' 
+
+export class I2CPortBus implements I2CBus {
   readonly port: MessagePort
-  readonly busNumber: b.I2CBusNumber
+  readonly busNumber: I2CBusNumber
 
-  static openPromisified(providerPort: MessagePort, busNumber: b.I2CBusNumber): Promise<I2CPortBus> {
+  static openPromisified(providerPort: MessagePort, busNumber: I2CBusNumber): Promise<I2CPortBus> {
     return Promise.resolve(new I2CPortBus(providerPort, busNumber))
   }
 
-  private constructor(port: MessagePort, busNumber: b.I2CBusNumber) {
+  private constructor(port: MessagePort, busNumber: I2CBusNumber) {
     this.port = port;
     this.busNumber = busNumber
   }
 
   close(): void {}
 
-  sendByte(address: b.I2CAddress, byte: number): Promise<void> {
-    throw new Error('impl')
-  }
-
-  readI2cBlock(address: b.I2CAddress, cmd: number, length: number, buffer: Buffer): Promise<b.I2CReadResult> {
-    console.log('call readI2cBlock on remote')
-    const mc = new MessageChannel()
-    this.port.postMessage({ bus: this.busNumber, port: mc.port2 }, [ mc.port2 ])
+  private static fire<R>(port: MessagePort, call: ReadWrite): Promise<R> {
     return new Promise((resolve, reject) => {
-      mc.port1.on('message', message => {
-        console.log('readI2cBlock message', message)
+      const timeoutMS = 1000 * 2
+      const timer = setTimeout(() => reject(new Error('timeout')), timeoutMS)
+
+      port.on('message', message => {
         if(message.type === 'error') { return reject(new Error(message.why)) }
         resolve(message)
+        clearTimeout(timer)
+        port.close()
       })
-      mc.port1.on('close', () => {
-        reject(new Error(''))
+      port.on('close', () => {
+        clearTimeout(timer)
+        reject(new Error('closed'))
       })
-      mc.port1.postMessage({ type: 'readBlock', bus: this.busNumber, address, cmd, length })
+
+      if('buffer' in call) {
+        port.postMessage(call, [ call.buffer.buffer ])
+      }
+      else {
+        port.postMessage(call)
+      }
     })
   }
 
-  writeI2cBlock(address: b.I2CAddress, cmd: number, length: number, buffer: Buffer): Promise<b.I2CWriteResult> {
-    throw new Error('impl')
+  private static async sideChannelFire<R>(port: MessagePort, bus: I2CBusNumber, call: ReadWrite): Promise<R> {
+    const mc = new MessageChannel()
+    port.postMessage({ bus, port: mc.port2 }, [ mc.port2 ])
+    return I2CPortBus.fire(mc.port1, call)
   }
 
-  i2cRead(address: b.I2CAddress, length: number, buffer: Buffer): Promise<b.I2CReadResult> {
-    throw new Error('impl')
+
+  sendByte(address: I2CAddress, byte: number): Promise<void> {
+    return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'sendByte', address, byte})
   }
 
-  i2cWrite(address: b.I2CAddress, length: number, buffer: Buffer): Promise<b.I2CWriteResult> {
-    throw new Error('impl')
+  readI2cBlock(address: I2CAddress, cmd: number, length: number, buffer: Buffer): Promise<I2CReadResult> {
+    return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'readBlock', address, cmd, length })
+  }
+
+  writeI2cBlock(address: I2CAddress, cmd: number, length: number, buffer: Buffer): Promise<I2CWriteResult> {
+    return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'writeBlock', address, cmd, buffer })
+  }
+
+  i2cRead(address: I2CAddress, length: number, buffer: Buffer): Promise<I2CReadResult> {
+    return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'read', address, length })
+  }
+
+  i2cWrite(address: I2CAddress, length: number, buffer: Buffer): Promise<I2CWriteResult> {
+    return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'write', address, buffer })
   }
 }

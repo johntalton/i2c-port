@@ -44,8 +44,8 @@ async function foo(port, bus) {
 
     await sensor.detectChip()
     await sensor.calibration()
-    await sensor.setProfile({ mode: 'NORMAL' })
-    console.log('Profile', await sensor.profile())
+    await sensor.setProfile({ mode: 'NORMAL', fifo: { active: true } })
+    console.log('Profile', sensor.chip, await sensor.profile())
 
     console.log('Goodbye')
   }
