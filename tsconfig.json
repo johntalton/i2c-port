@@ -1,0 +1,45 @@
+{
+    "compilerOptions": {
+        "alwaysStrict": false,
+
+        "incremental": true,
+        "watch": false,
+
+        "target": "ES2019",
+        "module": "CommonJS",
+        "lib": ["ESNext"],
+
+        "strict": true,
+        "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "strictNullChecks": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowJs": false,
+
+        "removeComments": false,
+        "preserveConstEnums": true,
+
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+
+        "moduleResolution": "node",
+
+        "isolatedModules": false,
+        "declaration": true,
+        "declarationMap": true,
+        "diagnostics": true,
+        "pretty": true,
+        "sourceMap": true,
+
+        "outDir": "./lib"
+    },
+    "compileOnSave": true,
+    "include": [
+        "src/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
