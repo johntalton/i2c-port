@@ -4,44 +4,54 @@ const { BoschIEU } = require('@johntalton/boschieu')
 const { I2CAddressedBus } = require('@johntalton/and-other-delights')
 
 
-async function i2cMultiPortService(port) {
+async function i2cMultiPortService(servicePort) {
   const i2c = require('i2c-bus')
   const { I2CPort } = require('../')
 
-  console.log('I2C Worker')
+  const clients = []
 
-  port.on('message', async message => {
-    console.log('I2CWorker recived client setup message')
+  servicePort.on('message', async message => {
+    const { port, bus } = message
 
-    const { bus } = message
     const busX = await i2c.openPromisified(bus)
 
-    const { port } = message
+    // we never remove from list, but we do close
+    clients.push(port)
+
     port.on('message', async clientMessage => {
       const { type, bus, address } = clientMessage
-      console.log('I2CWorker recived client action', type)
       const result = await I2CPort.handleMessage(busX, clientMessage)
       port.postMessage(result, result.buffer ? [ result.buffer.buffer ] : [])
-      // port.postMessage(result, [ result.buffer?.buffer ])
     })
-    port.on('close', () => console.log('I2CWorker sais goodbye to client'))
-    port.on('messageerror', e => console.log('I2CWorker client message error', e))
+    port.on('close', () => { console.log('I2CWorker Client sais goodbye to client'); })
+    port.on('messageerror', e => console.log('I2CWorker Client message error', e))
   })
+
+  servicePort.on('close', () => { clients.forEach(p => p.close()) })
 }
 
 async function foo(port, bus) {
   const { I2CPortBus } = require('../')
 
   console.log('IEU Client Worker')
+  try {
 
-  const i2cN = await I2CPortBus.openPromisified(port, bus)
-  const addressedI2C1 = new I2CAddressedBus(i2cN, 0x77);
-  const sensor = await BoschIEU.sensor(addressedI2C1);
+    const i2cN = await I2CPortBus.openPromisified(port, bus)
+    const addressedI2C1 = new I2CAddressedBus(i2cN, 0x77);
+    const sensor = await BoschIEU.sensor(addressedI2C1);
 
-  // console.log(sensor)
+    // console.log(sensor)
 
-  await sensor.detectChip()
-  console.log('Profile', await sensor.profile())
+    await sensor.detectChip()
+    await sensor.calibration()
+    await sensor.setProfile({ mode: 'NORMAL' })
+    console.log('Profile', await sensor.profile())
+
+    console.log('Goodbye')
+  }
+  finally {
+    port.close()
+  }
 }
 
 const mc = new MessageChannel()
