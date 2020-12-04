@@ -3,7 +3,7 @@
 Provides tooling that allows for `I2CBus` to be hosted natively, over `MessagePort`, within `Worker` and over `WebSockets`.
 
 [![npm Version](https://img.shields.io/npm/v/@johntalton/i2c-port.svg)](https://www.npmjs.com/package/@johntalton/i2c-port)
-![GitHub package.json version](https://img.shields.io/github/package-json/v/johntalton/i2c-port/ai2c-port)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/johntalton/i2c-port/i2c-port)
 ![CI](https://github.com/johntalton/i2c-port/workflows/CI/badge.svg)
 ![CodeQL](https://github.com/johntalton/i2c-port/workflows/CodeQL/badge.svg)
 ![GitHub](https://img.shields.io/github/license/johntalton/i2c-port)
