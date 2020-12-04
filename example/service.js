@@ -1,5 +1,5 @@
-
-async function i2cMultiPortService(servicePort) {
+const { isMainThread, parentPort } = require('worker_threads')
+function i2cMultiPortService(servicePort) {
   const i2c = require('i2c-bus')
   const { I2CPort } = require('../')
 
@@ -24,5 +24,7 @@ async function i2cMultiPortService(servicePort) {
 
   servicePort.on('close', () => { clients.forEach(p => p.close()) })
 }
+
+if(!isMainThread) { i2cMultiPortService(parentPort) }
 
 module.exports = { i2cMultiPortService }

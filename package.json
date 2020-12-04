@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "lib/index.js",
-  "dependencies": {},
   "devDependencies": {
     "@johntalton/and-other-delights": "^3.0.2",
     "@johntalton/boschieu": "^4.0.0",
@@ -11,6 +10,8 @@
     "@types/node": "^14.14.10",
     "express": "^4.17.1",
     "i2c-bus": "^5.2.1",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.6",
     "typescript": "^4.1.2",
     "ws": "^7.4.0"
   },
@@ -19,7 +20,8 @@
     "build:watch": "npm run build -- -w",
     "test": "node example/test.js",
     "test:ieu": "node example/ieu.js",
-    "test:web": "node example/web.js"
+    "test:web": "node example/web.js",
+    "test:web:watch": "nodemon example/web.js"
   },
   "author": "johntalton@gmail.com",
   "license": "MIT"

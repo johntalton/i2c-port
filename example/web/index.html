@@ -3,7 +3,10 @@
   <script>
   const ws = new WebSocket('ws://localhost:9000')
   ws.onmessage = event => console.log(event)
-  ws.send(SON.stringify({ hello: 'world' }))
+  ws.onerror = error => console.log('webSocket error', error)
+  ws.addEventListener('open', () => {
+    ws.send(JSON.stringify({ hello: 'world' }))
+  })
   </script>
  </head>
  <body>
