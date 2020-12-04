@@ -25,6 +25,6 @@ function i2cMultiPortService(servicePort) {
   servicePort.on('close', () => { clients.forEach(p => p.close()) })
 }
 
-if(!isMainThread) { i2cMultiPortService(parentPort) }
+// if(!isMainThread) { i2cMultiPortService(parentPort) }
 
 module.exports = { i2cMultiPortService }
