@@ -1,4 +1,5 @@
 const { isMainThread, parentPort } = require('worker_threads')
+
 function i2cMultiPortService(servicePort) {
   const i2c = require('i2c-bus')
   const { I2CPort } = require('../')
@@ -6,6 +7,7 @@ function i2cMultiPortService(servicePort) {
   const clients = []
 
   servicePort.on('message', async message => {
+    console.log('client connect message', message)
     const { port, bus } = message
 
     const busX = await i2c.openPromisified(bus)
@@ -14,8 +16,10 @@ function i2cMultiPortService(servicePort) {
     clients.push(port)
 
     port.on('message', async clientMessage => {
+      console.log('client message', clientMessage)
       const { type, bus, address } = clientMessage
       const result = await I2CPort.handleMessage(busX, clientMessage)
+      console.log('raw result', result)
       port.postMessage(result, result.buffer ? [ result.buffer.buffer ] : [])
     })
     port.on('close', () => { console.log('I2CWorker Client sais goodbye to client'); })
@@ -25,6 +29,8 @@ function i2cMultiPortService(servicePort) {
   servicePort.on('close', () => { clients.forEach(p => p.close()) })
 }
 
-// if(!isMainThread) { i2cMultiPortService(parentPort) }
+// null false - worker
+// <obj> true - port / include
+if(module.parent === null && !isMainThread) { i2cMultiPortService(parentPort) }
 
 module.exports = { i2cMultiPortService }

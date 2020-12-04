@@ -1,4 +1,4 @@
-const { Worker } = require('worker_threads')
+const { Worker, MessageChannel } = require('worker_threads')
 
 //const http = require('http')
 const express = require('express')
@@ -18,12 +18,22 @@ app.use((req, res, next) => next(new Error('🎁 ' + req.originalUrl)))
 const wsServer = new WebSocket.Server({ noServer: true });
 
 wsServer.on('connection', async function connection(ws, req) {
+
+  const mc = new MessageChannel()
+  i2cWorker.postMessage({ bus: 1, port: mc.port2 }, [ mc.port2 ])
+
   ws.on('message', async function incoming(message) {
-    console.log('received: %s', message);
-    i2cWorker.postMessage(message)
+    console.log('received', message);
+    const msg = JSON.parse(message)
+    mc.port1.postMessage(msg)
   });
-  ws.on('error', e => {})
-  ws.on('close', e => {})
+  ws.on('error', e => console.log('error', e))
+  ws.on('close', () => console.log('close'))
+
+  mc.port1.on('message', message => {
+    console.log('result', message)
+    ws.send(JSON.stringify(message))
+  })
 });
 
 const server = app.listen(9000, () => console.log('Service Up'))
