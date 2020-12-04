@@ -1,15 +1,52 @@
 <html>
  <head>
   <script>
-  const ws = new WebSocket('ws://localhost:9000')
-  ws.onmessage = event => console.log(event)
+    class I2CPortBus /*implements I2CBus*/ {
+      static openPromisified(providerPort, busNumber) {
+        return Promise.resolve(new I2CPortBus(providerPort, busNumber))
+      }
+      constructor(port, busNumber) {
+        this.port = port;
+        this.busNumber = busNumber
+      }
+      readI2cBlock(address, cmd, length, buffer) {
+        return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'readBlock', address, cmd, length })
+      }
+
+      static async sideChannelFir(port, bus, call){
+        //
+      }
+    }
+  </script>
+  <script>
+  //const ws = new WebSocket('ws://localhost:9000')
+  const ws = new WebSocket('ws://192.168.1.211:9000/bus/1', [ 'i2c', 'json' ])
+
+  ws.onmessage = event => {
+    console.log(event)
+    ui_insert(JSON.parse(event.data))
+  }
   ws.onerror = error => console.log('webSocket error', error)
   ws.addEventListener('open', () => {
-    ws.send(JSON.stringify({ hello: 'world' }))
+    ws.send(JSON.stringify({ bus: 1 }))
+    ws.send(JSON.stringify({ opaque: 'first', type: 'readBlock', address: 0x77, cmd: 0x00, length: 8 }))
   })
+
+  function ui_insert(message) {
+    const b = message.buffer ?? {}
+    const buffer = Uint8Array.from({ length: Object.keys(b).length }, a => 0)
+      .reduce((a, n, i) => a.concat(b[i]), [])
+
+    const listNode = document.getElementById("list")
+    const liNode = document.createElement("LI")
+    liNode.innerText = message.opaque
+    listNode.appendChild(liNode)
+
+  }
   </script>
  </head>
  <body>
-  This is the Body
+  <ul id="list">
+  </ul>
  </body>
 </html>
