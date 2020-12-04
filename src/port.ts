@@ -30,24 +30,24 @@ export class I2CPort {
   }
 
   private static async readBlock(bus: I2CBus, message: m.ReadBlock): Promise<m.ReadResult> {
+    const { opaque, address, cmd, length } = message
     try {
-      const { address, cmd, length } = message
       const buffer = Buffer.alloc(length)
       const { bytesRead } = await bus.readI2cBlock(address, cmd, buffer.length, buffer)
-      return { type: 'readResult', bytesRead, buffer: buffer.slice(0, bytesRead) }
+      return { opaque, type: 'readResult', bytesRead, buffer: buffer.slice(0, bytesRead) }
     } catch(e) {
-      return { type: 'error', why: 'readBlock: ' + e.message }
+      return { opaque, type: 'error', why: 'readBlock: ' + e.message }
     }
   }
 
   private static async writeBlock(bus: I2CBus, message: m.WriteBlock): Promise<m.WriteResult> {
+    const { opaque, address, cmd, buffer } = message
     try {
-      const { address, cmd, buffer } = message
       const { bytesWritten } = await bus.writeI2cBlock(address, cmd, buffer.length, Buffer.from(buffer))
-      return { type: 'writeResult', bytesWritten }
+      return { opaque, type: 'writeResult', bytesWritten }
     }
     catch(e) {
-      return { type: 'error', why: 'writeBlock: ' + e.message }
+      return { opaque, type: 'error', why: 'writeBlock: ' + e.message }
     }
   }
 }

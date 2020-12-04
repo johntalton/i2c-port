@@ -1,5 +1,4 @@
-
-export type Message = { type: string }
+export type Message = { type: string, opaque?: string }
 
 export type Addressed = { address: number } & Message
 export type Command = { cmd: number } & Addressed

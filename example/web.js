@@ -1,4 +1,5 @@
 const { Worker, MessageChannel } = require('worker_threads')
+const url = require('url')
 
 //const http = require('http')
 const express = require('express')
@@ -25,7 +26,7 @@ wsServer.on('connection', async function connection(ws, req) {
   ws.on('message', async function incoming(message) {
     console.log('received', message);
     const msg = JSON.parse(message)
-    mc.port1.postMessage(msg)
+    if("type" in msg) { mc.port1.postMessage(msg) }
   });
   ws.on('error', e => console.log('error', e))
   ws.on('close', () => console.log('close'))
@@ -39,6 +40,14 @@ wsServer.on('connection', async function connection(ws, req) {
 const server = app.listen(9000, () => console.log('Service Up'))
 
 server.on('upgrade', (request, socket, head) => {
+  const protocols = request.headers['sec-websocket-protocol']
+    ?.split(',')?.map(s => s.trim())
+    ?? []
+
+  const pathname = url.parse(request.url).pathname;
+  console.log('path / protocols', pathname, protocols)
+  if(!protocols.includes('i2c')) { console.log('no matching protocol - drop'); socket.destroy() }
+
   wsServer.handleUpgrade(request, socket, head, socket => {
     wsServer.emit('connection', socket, request);
   });
