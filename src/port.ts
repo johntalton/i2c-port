@@ -36,7 +36,7 @@ export class I2CPort {
       const { bytesRead } = await bus.readI2cBlock(address, cmd, buffer.length, buffer)
       return { opaque, type: 'readResult', bytesRead, buffer: buffer.slice(0, bytesRead) }
     } catch(e) {
-      return { opaque, type: 'error', why: 'readBlock: ' + e.message }
+      return { opaque, type: 'error', why: 'readBlock: ' + e.errno + e.message }
     }
   }
 
