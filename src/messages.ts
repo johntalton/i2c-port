@@ -1,6 +1,6 @@
 export type Message = { type: string, opaque?: string }
 
-export type Addressed = { address: number } & Message
+export type Addressed = { bus: number, address: number } & Message
 export type Command = { cmd: number } & Addressed
 //export type WithBuffer = { buffer: ArrayBuffer }
 export type WithBuffer = { buffer: Buffer }

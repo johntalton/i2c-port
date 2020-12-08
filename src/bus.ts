@@ -47,30 +47,30 @@ export class I2CPortBus implements I2CBus {
     })
   }
 
-  private static async sideChannelFire<R>(port: MessagePort, bus: I2CBusNumber, call: ReadWrite): Promise<R> {
+  private static async sideChannelFire<R>(port: MessagePort,call: ReadWrite): Promise<R> {
     const mc = new MessageChannel()
-    port.postMessage({ bus, port: mc.port2 }, [ mc.port2 ])
+    port.postMessage({ port: mc.port2 }, [ mc.port2 ])
     return I2CPortBus.fire(mc.port1, call)
   }
 
 
   sendByte(address: I2CAddress, byte: number): Promise<void> {
-    return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'sendByte', address, byte})
+    return I2CPortBus.sideChannelFire(this.port, { bus: this.busNumber, type: 'sendByte', address, byte})
   }
 
   readI2cBlock(address: I2CAddress, cmd: number, length: number, buffer: Buffer): Promise<I2CReadResult> {
-    return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'readBlock', address, cmd, length })
+    return I2CPortBus.sideChannelFire(this.port, { bus: this.busNumber, type: 'readBlock', address, cmd, length })
   }
 
   writeI2cBlock(address: I2CAddress, cmd: number, length: number, buffer: Buffer): Promise<I2CWriteResult> {
-    return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'writeBlock', address, cmd, buffer })
+    return I2CPortBus.sideChannelFire(this.port, { bus: this.busNumber, type: 'writeBlock', address, cmd, buffer })
   }
 
   i2cRead(address: I2CAddress, length: number, buffer: Buffer): Promise<I2CReadResult> {
-    return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'read', address, length })
+    return I2CPortBus.sideChannelFire(this.port, { bus: this.busNumber, type: 'read', address, length })
   }
 
   i2cWrite(address: I2CAddress, length: number, buffer: Buffer): Promise<I2CWriteResult> {
-    return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'write', address, buffer })
+    return I2CPortBus.sideChannelFire(this.port, { bus: this.busNumber, type: 'write', address, buffer })
   }
 }
