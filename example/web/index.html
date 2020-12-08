@@ -4,8 +4,6 @@
   <script>
   const ws = new WebSocket('ws://192.168.1.211:9000/bus', [ 'i2c', 'json' ])
 
-
-
   function base64ToArrayBuffer(base64) {
     const binary_string = atob(base64);
     const bytes = binary_string
@@ -22,10 +20,6 @@
     }
 
     return btoa(ab2str(ab))
-
-    // const result = btoa(ab.map(b => b.charCodeAt(0)))
-    // console.log('result', result)
-    // return result
   }
 
   ws.onmessage = event => {
