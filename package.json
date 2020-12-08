@@ -21,6 +21,7 @@
     "test": "node example/test.js",
     "test:ieu": "node example/ieu.js",
     "test:web": "node example/web.js",
+    "test:web:host": "node example/web.js --hostOnly",
     "test:web:watch": "nodemon example/web.js"
   },
   "author": "johntalton@gmail.com",

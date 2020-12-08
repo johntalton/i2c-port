@@ -7,40 +7,19 @@ const WebSocket = require('ws')
 //const { v4: uuidv4 } = require('uuid');
 const morgan = require('morgan')
 
-const app = express()
+
+const hostOnly = process.argv.includes('--hostOnly')
 const MORGAN_EXT = ':status :method :url HTTP/:http-version  :remote-addr @ :response-time ms\x1b[0m'
-app.use(morgan(MORGAN_EXT))
-app.use('/', express.static('example/web'))
-app.use((req, res, next) => next(new Error('🎁 ' + req.originalUrl)))
+
+const app = express()
+  .use(morgan(MORGAN_EXT))
+  .use('/', express.static('example/web'))
+  .use((req, res, next) => { req.path === '/favicon.ico' ? res.status(200).end() : next() })
+  .use((req, res, next) => next(new Error('🎁 ' + req.originalUrl)))
 
 const server = app.listen(9000, () => console.log('Service Up'))
 
-if(true) {
-  function portMessageToStringMessage(message) {
-    const msg = message
-    if(msg.buffer !== undefined) {
-      msg.buffer = Buffer.from(message.buffer).toString('base64')
-    }
-
-    return JSON.stringify(msg)
-  }
-
-  function stringMessageToPortMessage(message) {
-      const encodedMsg = JSON.parse(message)
-
-      const msg = encodedMsg
-      if(msg.buffer) {
-        const buf = Buffer.from(msg.buffer, 'base64')
-          .toString()
-          .split()
-          .map(b => b.charCodeAt(0))
-
-        //console.log('decoding', buf)
-        msg.buffer = Buffer.from(buf)
-      }
-
-      return msg
-  }
+if(!hostOnly) {
 
   function postMessageOnPort(port, msg) {
     if(msg.type !== undefined) {
@@ -53,13 +32,17 @@ if(true) {
     }
   }
 
+  function createI2cWorker(serviceUrl) {
+    const i2cWorker = new Worker(serviceUrl)
+    i2cWorker.on('message', event => console.log('worker said', event))
+    i2cWorker.on('exit', event => {
+      console.log('worker exit', event)
+      // TODO server.close()
+    })
+  }
 
-  const i2cWorker = new Worker(__dirname + '/service.js')
-  i2cWorker.on('message', event => console.log('worker said', event))
-  i2cWorker.on('exit', event => {
-    console.log('worker exit', event)
-    server.close()
-  })
+  const serviceUrl = __dirname + 'service.js' // user path.concat
+  const i2cWorker = createI2cWorker(serviceUrl)
 
   const wsServer = new WebSocket.Server({ noServer: true });
 

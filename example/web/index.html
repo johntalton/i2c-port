@@ -1,45 +1,64 @@
 <html>
  <head>
+  <script type="module" src="./i2c-web-bus.js"></script>
   <script>
-    class I2CPortBus /*implements I2CBus*/ {
-      static openPromisified(providerPort, busNumber) {
-        return Promise.resolve(new I2CPortBus(providerPort, busNumber))
-      }
-      constructor(port, busNumber) {
-        this.port = port;
-        this.busNumber = busNumber
-      }
-      readI2cBlock(address, cmd, length, buffer) {
-        return I2CPortBus.sideChannelFire(this.port, this.busNumber, { type: 'readBlock', address, cmd, length })
-      }
+  const ws = new WebSocket('ws://192.168.1.211:9000/bus', [ 'i2c', 'json' ])
 
-      static async sideChannelFir(port, bus, call){
-        //
-      }
+
+
+  function base64ToArrayBuffer(base64) {
+    const binary_string = atob(base64);
+    const bytes = binary_string
+      .split()
+      .map((_, i) => binary_string.charCodeAt(i))
+      .reduce((acc, code, i) => { acc[i] = code; return acc }, new Uint8Array(binary_string.length))
+
+    return bytes.buffer
+  }
+
+  function arrayBufferToBase64(ab) {
+    function ab2str(buf) {
+      return String.fromCharCode.apply(null, new Uint16Array(buf));
     }
-  </script>
-  <script>
-  //const ws = new WebSocket('ws://localhost:9000')
-  const ws = new WebSocket('ws://192.168.1.211:9000/bus/1', [ 'i2c', 'json' ])
+
+    return btoa(ab2str(ab))
+
+    // const result = btoa(ab.map(b => b.charCodeAt(0)))
+    // console.log('result', result)
+    // return result
+  }
 
   ws.onmessage = event => {
-    console.log(event)
-    ui_insert(JSON.parse(event.data))
+    let message = JSON.parse(event.data)
+    if(message.buffer !== undefined) { message.buffer = base64ToArrayBuffer(message.buffer) }
+
+    ui_insert(message)
   }
+
   ws.onerror = error => console.log('webSocket error', error)
+
   ws.addEventListener('open', () => {
-    ws.send(JSON.stringify({ bus: 1 }))
-    ws.send(JSON.stringify({ opaque: 'first', type: 'readBlock', address: 0x77, cmd: 0x00, length: 8 }))
+    //ws.send(JSON.stringify({ opaque: 'chip_id0', type: 'readBlock', bus: 1, address: 0x76, cmd: 0x00, length: 1 }))
+    //ws.send(JSON.stringify({ opaque: 'chip_id1', type: 'readBlock', bus: 1, address: 0x77, cmd: 0x00, length: 1 }))
+    //ws.send(JSON.stringify({ opaque: 'chip_id2', type: 'readBlock', bus: '1:0', address: 0x77, cmd: 0x00, length: 8 }))
+
+    const pwr_ctrl = Uint8Array.from([ 0x33 ]) // 0b00110011
+    ws.send(JSON.stringify({ opaque: 'writeNormalProfile', type: 'writeBlock', bus: 1, address: 0x77, cmd: 0x1B,  buffer: arrayBufferToBase64(pwr_ctrl) }))
+    // ws.send(JSON.stringify({ opaque: 'writeSleepProfile', type: 'writeBlock', bus: 1, address: 0x77, cmd: 0x1B,  buffer: arrayBufferToBase64([ 0x00 ]) }))
+
+    ws.send(JSON.stringify({ opaque: 'profile', type: 'readBlock', bus: 1, address: 0x77, cmd: 0x15, length: 10 }))
   })
 
   function ui_insert(message) {
+    console.log(message)
+
     const b = message.buffer ?? {}
     const buffer = Uint8Array.from({ length: Object.keys(b).length }, a => 0)
       .reduce((a, n, i) => a.concat(b[i]), [])
 
     const listNode = document.getElementById("list")
     const liNode = document.createElement("LI")
-    liNode.innerText = message.opaque
+    liNode.innerText = `Opaque: ${message.opaque}`
     listNode.appendChild(liNode)
 
   }
