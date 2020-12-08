@@ -19,7 +19,7 @@ const app = express()
 const server = app.listen(9000, () => console.log('Service Up'))
 
 if(!hostOnly) {
-  function handleWSConnectionOverServerPort(servicePort, serviceName) {
+  function handleWSConnectionOverServicePort(servicePort, serviceName) {
     function portMessageToStringMessage(message) {
       const msg = message
       if(msg.buffer !== undefined) {
@@ -82,6 +82,7 @@ if(!hostOnly) {
         ws.close()
       }
     }
+
     // handleWSConnection
     return (ws, req) => {
       // inform the service of our intention to communicate
@@ -96,8 +97,10 @@ if(!hostOnly) {
       ws.on('close', handleWSCloseOverMessagePort(mc.port1))
 
       // bind service handlers
-      mc.port1.on('message', handlePortMessageOverWS)
-      mc.port1.on('close', handlePortCloseOverWS)
+      mc.port1.on('message', handlePortMessageOverWS(ws))
+      mc.port1.on('close', handlePortCloseOverWS(ws))
+
+      console.log('client connection to service established')
     }
   }
 
@@ -122,12 +125,12 @@ if(!hostOnly) {
     });
   }
 
-  const serviceUrl = __dirname + 'service.js' // user path.concat
+  const serviceUrl = __dirname + '/service.js' // user path.concat
   const i2cWorker = new Worker(serviceUrl)
   i2cWorker.on('message', event => console.log('worker said', event))
   i2cWorker.on('exit', event => console.log('worker exit', event))
 
   const wsServer = new WebSocket.Server({ noServer: true })
-  wsServer.on('connection', handleWSConnectionOverServerPort(wsServer, 'i2c'));
+  wsServer.on('connection', handleWSConnectionOverServicePort(i2cWorker, 'i2c'));
   server.on('upgrade', handleWSUpgrade)
 }
