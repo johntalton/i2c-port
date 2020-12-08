@@ -92,16 +92,23 @@ if(true) {
   });
 
   server.on('upgrade', (request, socket, head) => {
+    //const ip = req.headers['x-forwarded-for'].split(/\s*,\s*/)[0]
+    //const ip = req.socket.remoteAddress
+    const pathname = url.parse(request.url).pathname
     const protocols = request.headers['sec-websocket-protocol']
       ?.split(',')?.map(s => s.trim())
       ?? []
 
-    const pathname = url.parse(request.url).pathname;
     console.log('path / protocols', pathname, protocols)
-    if(!protocols.includes('i2c')) { console.log('no matching protocol - drop'); socket.destroy() }
+
+    if(!protocols.includes('i2c')) {
+      console.log('no matching protocol - drop');
+      // we could `socket.write()` but unknown what it should be (HTTP/1 header?)
+      socket.destroy()
+    }
 
     wsServer.handleUpgrade(request, socket, head, socket => {
-      wsServer.emit('connection', socket, request);
+      wsServer.emit('connection', socket, request)
     });
   })
 }
