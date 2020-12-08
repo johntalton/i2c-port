@@ -1,36 +1,63 @@
 const { isMainThread, parentPort } = require('worker_threads')
+const { I2CPort } = require('../')
 
-function i2cMultiPortService(servicePort) {
-  const i2c = require('i2c-bus')
-  const { I2CPort } = require('../')
+function i2cMultiPortService(servicePort, i2cFactory) {
 
-  const clients = []
+  let clients = []
 
   servicePort.on('message', async message => {
-    console.log('client connect message', message)
-    const { port, bus } = message
+    console.log('client connect message')
+    const { port } = message
 
-    const busX = await i2c.openPromisified(bus)
+    let busX = undefined;
 
-    // we never remove from list, but we do close
-    clients.push(port)
+    clients = [...clients, port]
 
     port.on('message', async clientMessage => {
-      console.log('client message', clientMessage)
+      // console.log('client message', clientMessage)
       const { type, bus, address } = clientMessage
+
+      if(busX === undefined) {
+        console.log('alloc bus from factory', bus)
+        if(bus !== 1) {
+          console.log('invalid bus number', bus)
+          port.postMessage({ opaque: clientMessage.opaque, type: 'error', why: 'invalid bus number' })
+          return
+        }
+
+        //
+        busX = await i2cFactory.openPromisified(bus)
+      }
+
       const result = await I2CPort.handleMessage(busX, clientMessage)
-      console.log('raw result', result)
+
+      // console.log('raw result', result)
       port.postMessage(result, result.buffer ? [ result.buffer.buffer ] : [])
     })
-    port.on('close', () => { console.log('I2CWorker Client sais goodbye to client'); })
+
+    port.on('close', () => {
+      console.log('I2CWorker Client sais goodbye to client')
+
+      if(!clients.includes(port)) { console.log('client port not in clients list') }
+      clients = clients.filter(p => p !== port)
+
+      port.close()
+      busX.close()
+    })
+
     port.on('messageerror', e => console.log('I2CWorker Client message error', e))
   })
 
-  servicePort.on('close', () => { clients.forEach(p => p.close()) })
+  servicePort.on('messageerror', error => console.log('message error', error))
+  servicePort.on('close', () => { console.log('close service port'); clients.forEach(p => p.close()) })
 }
 
 // null false - worker
 // <obj> true - port / include
-if(module.parent === null && !isMainThread) { i2cMultiPortService(parentPort) }
+if(module.parent === null && !isMainThread) {
+  const i2c = require('i2c-bus')
+
+  i2cMultiPortService(parentPort, i2c)
+}
 
 module.exports = { i2cMultiPortService }
