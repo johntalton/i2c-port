@@ -26,7 +26,7 @@ async function basicClientService(port, bus, address) {
     if(id !== 0x60) { return }
 
     console.log('Enable Normal Mode')
-    const buffer = Buffer.from([ 0x30 ])
+    const buffer = Buffer.from([ 0x33 ])
     port.postMessage({ type: 'writeBlock', bus, address, cmd: 0x1B, buffer }, [ buffer.buffer ])
   })
 
@@ -60,7 +60,10 @@ if (isMainThread) {
 else
 {
   const { i2c, bus, address } = workerData
-  if(i2c === true) { i2cMultiPortService(parentPort) }
+  if(i2c === true) {
+    const i2c = require('i2c-bus')
+    i2cMultiPortService(parentPort, i2c)
+  }
   else { basicClientService(parentPort, bus, address) }
 }
 

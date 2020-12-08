@@ -2,6 +2,7 @@ export type Message = { type: string, opaque?: string }
 
 export type Addressed = { address: number } & Message
 export type Command = { cmd: number } & Addressed
+//export type WithBuffer = { buffer: ArrayBuffer }
 export type WithBuffer = { buffer: Buffer }
 
 export type SendByte = { type: 'sendByte', byte: number } & Addressed

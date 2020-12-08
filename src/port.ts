@@ -5,6 +5,7 @@ import * as m from  './messages'
 export class I2CPort {
   static async handleMessage(bus: I2CBus, message: m.ReadWrite): Promise<m.Result> {
     const { type } = message
+
     switch(type) {
     case 'sendByte': return I2CPort.sendByte(bus, message as m.SendByte)
     case 'read': return I2CPort.read(bus, message as m.Read)
@@ -43,7 +44,7 @@ export class I2CPort {
   private static async writeBlock(bus: I2CBus, message: m.WriteBlock): Promise<m.WriteResult> {
     const { opaque, address, cmd, buffer } = message
     try {
-      const { bytesWritten } = await bus.writeI2cBlock(address, cmd, buffer.length, Buffer.from(buffer))
+      const { bytesWritten } = await bus.writeI2cBlock(address, cmd, buffer.length, buffer)
       return { opaque, type: 'writeResult', bytesWritten }
     }
     catch(e) {
