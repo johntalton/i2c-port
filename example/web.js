@@ -1,4 +1,6 @@
 const { Worker, MessageChannel } = require('worker_threads')
+const { performance, PerformanceObserver } = require('perf_hooks')
+
 const url = require('url')
 
 //const http = require('http')
@@ -23,8 +25,8 @@ if(!hostOnly) {
     return String.fromCharCode.apply(null, new Uint16Array(buf));
   }
 
-  function handleWSConnectionOverServicePort(servicePort, serviceName) {
-    function portMessageToStringMessage(message) {
+  class MessageTransform {
+    static portMessageToStringMessage(message) {
       if(message.buffer) {
         const s = ab2str(message.buffer)
         console.log(message.buffer, Buffer.from(s, 'binary'))
@@ -36,7 +38,7 @@ if(!hostOnly) {
       return JSON.stringify(message)
     }
 
-    function stringMessageToPortMessage(message) {
+    static stringMessageToPortMessage(message) {
         const encodedMsg = JSON.parse(message)
 
         const msg = encodedMsg
@@ -52,20 +54,27 @@ if(!hostOnly) {
 
         return msg
     }
+  }
 
-    function postMessageOnPort(port, msg) {
-      if(msg.type !== undefined) {
-        if(msg.buffer) {
-          port.postMessage(msg, [ msg.buffer.buffer ])
-        }
-        else {
-          port.postMessage(msg)
+  function handleWSConnectionOverServicePort(servicePort, serviceName) {
+    function handleWSMessageOverPort(port) {
+      function postMessageOnPort(port, msg) {
+        if(msg.type !== undefined) {
+          if(msg.buffer) {
+            port.postMessage(msg, [ msg.buffer.buffer ])
+          }
+          else {
+            port.postMessage(msg)
+          }
         }
       }
-    }
 
-    function handleWSMessageOverPort(port) {
-      return message => postMessageOnPort(port, stringMessageToPortMessage(message))
+      return message => {
+        performance.mark('WS:Message:Start')
+        postMessageOnPort(port, MessageTransform.stringMessageToPortMessage(message))
+        performance.mark('WS:Message:End')
+        performance.measure('WS:Message', 'WS:Message:Start', 'WS:Message:End')
+      }
     }
 
     function handleWSError(e) {
@@ -80,7 +89,11 @@ if(!hostOnly) {
     }
 
     function handlePortMessageOverWS(ws) {
-      return message => ws.send(portMessageToStringMessage(message))
+      return message => {
+        performance.mark()
+        ws.send(MessageTransform.portMessageToStringMessage(message))
+        performance.mark()
+      }
     }
 
     function handlePortCloseOverWS(ws) {
@@ -111,25 +124,28 @@ if(!hostOnly) {
     }
   }
 
-  function handleWSUpgrade(request, socket, head) {
-    //const ip = req.headers['x-forwarded-for'].split(/\s*,\s*/)[0]
-    //const ip = req.socket.remoteAddress
-    const pathname = url.parse(request.url).pathname
-    const protocols = request.headers['sec-websocket-protocol']
-      ?.split(',')?.map(s => s.trim())
-      ?? []
 
-    console.log('path / protocols', pathname, protocols)
+  function handleWSUpgradeOverWSServer(wsServer) {
+    return (request, socket, head) => {
+      //const ip = req.headers['x-forwarded-for'].split(/\s*,\s*/)[0]
+      //const ip = req.socket.remoteAddress
+      const pathname = url.parse(request.url).pathname
+      const protocols = request.headers['sec-websocket-protocol']
+        ?.split(',')?.map(s => s.trim())
+        ?? []
 
-    if(!protocols.includes('i2c')) {
-      console.log('no matching protocol - drop');
-      // we could `socket.write()` but unknown what it should be (HTTP/1 header?)
-      socket.destroy()
+      console.log('path / protocols', pathname, protocols)
+
+      if(!protocols.includes('i2c')) {
+        console.log('no matching protocol - drop');
+        // we could `socket.write()` but unknown what it should be (HTTP/1 header?)
+        socket.destroy()
+      }
+
+      wsServer.handleUpgrade(request, socket, head, socket => {
+        wsServer.emit('connection', socket, request)
+      })
     }
-
-    wsServer.handleUpgrade(request, socket, head, socket => {
-      wsServer.emit('connection', socket, request)
-    });
   }
 
   const serviceUrl = __dirname + '/service.js' // user path.concat
@@ -137,7 +153,13 @@ if(!hostOnly) {
   i2cWorker.on('message', event => console.log('worker said', event))
   i2cWorker.on('exit', event => console.log('worker exit', event))
 
-  const wsServer = new WebSocket.Server({ noServer: true })
-  wsServer.on('connection', handleWSConnectionOverServicePort(i2cWorker, 'i2c'));
-  server.on('upgrade', handleWSUpgrade)
+  const i2cWSServer = new WebSocket.Server({ noServer: true })
+  i2cWSServer.on('connection', handleWSConnectionOverServicePort(i2cWorker, 'i2c'));
+  server.on('upgrade', handleWSUpgradeOverWSServer(i2cWSServer))
+
+  const o = new PerformanceObserver((list, observer) => {
+    console.log('observation: ', list.getEntriesByType('measure'))
+  })
+  o.observer({ buffered: true, entryTypes: [ 'measure' ] })
+
 }
