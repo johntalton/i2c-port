@@ -1,4 +1,5 @@
 const { MessageChannel } = require('worker_threads')
+const { console } = require('console')
 
 const i2c = require('i2c-bus')
 

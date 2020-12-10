@@ -1,4 +1,7 @@
 const { isMainThread, Worker, MessageChannel, workerData, parentPort } = require('worker_threads')
+const { Buffer } = require('buffer')
+const { setTimeout, clearTimeout } = require('timers')
+const { console } = require('console')
 
 const { i2cMultiPortService } = require('./service')
 
@@ -8,7 +11,7 @@ async function basicClientService(port, bus, address) {
   let state = 0
 
   port.on('message', message => {
-    console.log('Client Worker recived message', message)
+    console.log('Client Worker received message', message)
 
     if(message.type === 'error') { return }
 
@@ -66,8 +69,3 @@ else
   }
   else { basicClientService(parentPort, bus, address) }
 }
-
-
-
-
-

@@ -3,11 +3,36 @@
   "version": "1.0.0",
   "description": "",
   "main": "lib/index.js",
+  "exports": {
+    "import": "./src/index.ts",
+    "require": "./lib/src/index.js"
+  },
+  "type": "module",
+  "files": [
+    "lib/**/*.js",
+    "lib/**/*.d.ts",
+    "lib/**/*.d.ts.map",
+    "lib/**/*.js.map"
+  ],
+  "types": "lib/index.d.ts",
   "devDependencies": {
     "@johntalton/and-other-delights": "^3.0.2",
     "@johntalton/boschieu": "^4.0.0",
     "@types/i2c-bus": "^5.1.0",
     "@types/node": "^14.14.10",
+    "@typescript-eslint/eslint-plugin": "^4.9.1",
+    "@typescript-eslint/parser": "^4.9.1",
+    "eslint": "^7.15.0",
+    "eslint-plugin-fp": "^2.3.0",
+    "eslint-plugin-immutable": "^1.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsdoc": "^30.7.8",
+    "eslint-plugin-mocha": "^8.0.0",
+    "eslint-plugin-no-loops": "^0.3.0",
+    "eslint-plugin-no-use-extend-native": "^0.5.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-security": "^1.4.0",
+    "eslint-plugin-spellcheck": "^0.0.17",
     "express": "^4.17.1",
     "i2c-bus": "^5.2.1",
     "morgan": "^1.10.0",
@@ -16,6 +41,8 @@
     "ws": "^7.4.0"
   },
   "scripts": {
+    "lint": "npm --silent run lint:ts",
+    "lint:ts": "./node_modules/.bin/eslint --no-inline-config --report-unused-disable-directives --ext .ts src/*.ts",
     "build": "tsc -p .",
     "build:watch": "npm run build -- -w",
     "test": "node example/test.js",
@@ -24,6 +51,68 @@
     "test:web:host": "node example/web.js --hostOnly",
     "test:web:watch": "nodemon example/web.js"
   },
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "plugin:promise/recommended",
+      "plugin:security/recommended",
+      "plugin:jsdoc/recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2021,
+      "sourceType": "module"
+    },
+    "env": {
+      "es2021": true,
+      "mocha": true
+    },
+    "plugins": [
+      "import",
+      "promise",
+      "immutable",
+      "security",
+      "no-loops",
+      "fp",
+      "no-use-extend-native",
+      "jsdoc",
+      "spellcheck",
+      "mocha",
+      "@typescript-eslint"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "settings": {
+      "import/resolver": {
+        "typescript": {}
+      },
+      "import/parsers": {
+        "@typescript-eslint/parser": [
+          ".ts"
+        ]
+      }
+    },
+    "rules": {
+      "spellcheck/spell-checker": [
+        "error",
+        {
+          "ignoreRequire": true,
+          "identifiers": false,
+          "minLength": 3,
+          "skipWords": [
+            "johntalton", "Promisified"
+          ]
+        }
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johntalton/i2c-port.git"
+  },
   "author": "johntalton@gmail.com",
-  "license": "MIT"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/johntalton/i2c-port/issues"
+  },
+  "homepage": "https://github.com/johntalton/i2c-port#readme"
 }

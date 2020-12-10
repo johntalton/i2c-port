@@ -1,4 +1,7 @@
 const { isMainThread, parentPort } = require('worker_threads')
+const { Buffer } = require('buffer')
+const { console } = require('console')
+
 const { I2CPort } = require('../')
 
 function i2cMultiPortService(servicePort, i2cFactory) {
@@ -16,11 +19,11 @@ function i2cMultiPortService(servicePort, i2cFactory) {
     clients = [...clients, port]
 
     port.on('message', async clientMessage => {
-      //console.log('i2c recv client message', clientMessage)
+      // console.log('i2c received client message', clientMessage)
       const { bus } = clientMessage
 
       if(busX === undefined) {
-        console.log('i2c alloc bus from factory', bus)
+        console.log('i2c allocate bus from factory', bus)
         if(bus !== 1) {
           console.log('i2c invalid bus number', bus)
           port.postMessage({ opaque: clientMessage.opaque, type: 'error', why: 'invalid bus number' })
