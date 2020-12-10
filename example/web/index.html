@@ -1,64 +1,58 @@
 <html>
  <head>
-  <script type="module" src="./i2c-web-bus.js"></script>
-  <script>
-  const ws = new WebSocket('ws://192.168.1.211:9000/bus', [ 'i2c', 'json' ])
+  <!-- script async type="module" src="./i2c-web-bus.js"></script -->
 
-  function base64ToArrayBuffer(base64) {
-    const binary_string = atob(base64);
-    const bytes = binary_string
-      .split()
-      .map((_, i) => binary_string.charCodeAt(i))
-      .reduce((acc, code, i) => { acc[i] = code; return acc }, new Uint8Array(binary_string.length))
+  <script async defer src="./ui.js"></script>
+  <script type="module">
+    import { MessageTransform } from './message-transform.js'
 
-    return bytes.buffer
-  }
-
-  function arrayBufferToBase64(ab) {
-    function ab2str(buf) {
-      return String.fromCharCode.apply(null, new Uint16Array(buf));
+    export function connect() {
+      const ws = new WebSocket('ws://192.168.1.211:9000/bus', [ 'i2c', 'json' ])
+      ws.onmessage = event => ui_insert(MessageTransform.stringMessageToMessage(event.data))
+      ws.onerror = event => console.log('webSocket error', event)
+      ws.onclose = event => console.log('webSocket close', event.code, event.reason)
+      ws.onopen = event => sendTestScript(ws)
     }
 
-    return btoa(ab2str(ab))
-  }
+    function sendTestScript(ws) {
+      console.log('sending test script')
+      ws.send(JSON.stringify({ opaque: 'chip_id@76', type: 'readBlock', bus: 1, address: 0x76, cmd: 0x00, length: 1 }))
+      ws.send(JSON.stringify({ opaque: 'chip_id@77', type: 'readBlock', bus: 1, address: 0x77, cmd: 0x00, length: 1 }))
+      //ws.send(JSON.stringify({ opaque: 'chip_id2', type: 'readBlock', bus: '1:0', address: 0x77, cmd: 0x00, length: 8 }))
 
-  ws.onmessage = event => {
-    let message = JSON.parse(event.data)
-    if(message.buffer !== undefined) { message.buffer = base64ToArrayBuffer(message.buffer) }
+      ws.send(MessageTransform.messageToStringMessage({
+        opaque: 'writeNormalProfile',
+        type: 'writeBlock',
+        bus: 1, address: 0x77,
+        cmd: 0x1B, buffer: Uint8Array.from([ 0x33 ])
+      }))
 
-    ui_insert(message)
-  }
+      // ws.send(JSON.stringify({ opaque: 'writeSleepProfile', type: 'writeBlock', bus: 1, address: 0x77, cmd: 0x1B,  buffer: arrayBufferToBase64([ 0x00 ]) }))
 
-  ws.onerror = error => console.log('webSocket error', error)
+      ws.send(MessageTransform.messageToStringMessage({
+        opaque: 'profile',
+        type: 'readBlock',
+        bus: 1, address: 0x77,
+        cmd: 0x15, length: 10
+      }))
+    }
 
-  ws.addEventListener('open', () => {
-    //ws.send(JSON.stringify({ opaque: 'chip_id0', type: 'readBlock', bus: 1, address: 0x76, cmd: 0x00, length: 1 }))
-    //ws.send(JSON.stringify({ opaque: 'chip_id1', type: 'readBlock', bus: 1, address: 0x77, cmd: 0x00, length: 1 }))
-    //ws.send(JSON.stringify({ opaque: 'chip_id2', type: 'readBlock', bus: '1:0', address: 0x77, cmd: 0x00, length: 8 }))
+    const uiScriptElem = document.querySelector('script[src = "./ui.js"]')
+    uiScriptElem.onload = event => console.log('ui Load', event)
 
-    const pwr_ctrl = Uint8Array.from([ 0x33 ]) // 0b00110011
-    ws.send(JSON.stringify({ opaque: 'writeNormalProfile', type: 'writeBlock', bus: 1, address: 0x77, cmd: 0x1B,  buffer: arrayBufferToBase64(pwr_ctrl) }))
-    // ws.send(JSON.stringify({ opaque: 'writeSleepProfile', type: 'writeBlock', bus: 1, address: 0x77, cmd: 0x1B,  buffer: arrayBufferToBase64([ 0x00 ]) }))
-
-    ws.send(JSON.stringify({ opaque: 'profile', type: 'readBlock', bus: 1, address: 0x77, cmd: 0x15, length: 10 }))
-  })
-
-  function ui_insert(message) {
-    console.log(message)
-
-    const b = message.buffer ?? {}
-    const buffer = Uint8Array.from({ length: Object.keys(b).length }, a => 0)
-      .reduce((a, n, i) => a.concat(b[i]), [])
-
-    const listNode = document.getElementById("list")
-    const liNode = document.createElement("LI")
-    liNode.innerText = `Opaque: ${message.opaque}`
-    listNode.appendChild(liNode)
-
-  }
+    document.addEventListener("DOMContentLoaded", () => { console.log('DOM Content Loaded'); connect() })
   </script>
  </head>
  <body>
+   <!-- table>
+    <th>Reg</th> <th>hex</th> <th>dec</th>  <th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0</th>
+    <tr id="0xff">
+      <td>0xff</td> <th>0</th><th>0</th>    <th>0</th><th>0</th><th>1</th><th>1</th><th>1</th><th>1</th><th>0</th><th>0</th>
+    </tr>
+    <tr id="0x1b">
+      <td>0x1b</td> <th>0</th><th>0</th>   <th>0</th><th>0</th><th>1</th><th>1</th><th>1</th><th>1</th><th>0</th><th>0</th>
+    </tr>
+   </table -->
   <ul id="list">
   </ul>
  </body>
