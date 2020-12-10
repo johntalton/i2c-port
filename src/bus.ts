@@ -1,4 +1,5 @@
 import { MessageChannel, MessagePort } from 'worker_threads'
+import { setTimeout, clearTimeout } from 'timers'
 
 import {
   I2CBus, I2CBusNumber, I2CAddress,

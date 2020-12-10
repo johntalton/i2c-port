@@ -1,5 +1,8 @@
+/* eslint-disable no-inner-declarations */
 const { Worker, MessageChannel } = require('worker_threads')
 const { performance, PerformanceObserver } = require('perf_hooks')
+const { Buffer } = require('buffer')
+const { console } = require('console')
 
 const url = require('url')
 

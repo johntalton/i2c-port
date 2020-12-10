@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer'
+
 import { I2CBus } from '@johntalton/and-other-delights'
 
 import * as m from  './messages'
