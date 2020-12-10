@@ -19,14 +19,21 @@ const app = express()
 const server = app.listen(9000, () => console.log('Service Up'))
 
 if(!hostOnly) {
+  function ab2str(buf) {
+    return String.fromCharCode.apply(null, new Uint16Array(buf));
+  }
+
   function handleWSConnectionOverServicePort(servicePort, serviceName) {
     function portMessageToStringMessage(message) {
-      const msg = message
-      if(msg.buffer !== undefined) {
-        msg.buffer = Buffer.from(message.buffer).toString('base64')
+      if(message.buffer) {
+        const s = ab2str(message.buffer)
+        console.log(message.buffer, Buffer.from(s, 'binary'))
+        const buffer  = Buffer.from(message.buffer).toString('base64')
+        console.log('i2c message converted to ws string', buffer)
+        return JSON.stringify({ ...message, buffer })
       }
 
-      return JSON.stringify(msg)
+      return JSON.stringify(message)
     }
 
     function stringMessageToPortMessage(message) {
@@ -36,7 +43,7 @@ if(!hostOnly) {
         if(msg.buffer) {
           const buf = Buffer.from(msg.buffer, 'base64')
             .toString()
-            .split()
+            .split('')
             .map(b => b.charCodeAt(0))
 
           //console.log('decoding', buf)
