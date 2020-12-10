@@ -160,6 +160,6 @@ if(!hostOnly) {
   const o = new PerformanceObserver((list, observer) => {
     console.log('observation: ', list.getEntriesByType('measure'))
   })
-  o.observer({ buffered: true, entryTypes: [ 'measure' ] })
+  o.observe({ buffered: true, entryTypes: [ 'measure' ] })
 
 }
