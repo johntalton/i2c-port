@@ -1,9 +1,6 @@
-const { isMainThread, Worker, MessageChannel, workerData, parentPort } = require('worker_threads')
-const { Buffer } = require('buffer')
-const { setTimeout, clearTimeout } = require('timers')
-const { console } = require('console')
+import { isMainThread, Worker, MessageChannel, workerData, parentPort } from 'worker_threads'
 
-const { i2cMultiPortService } = require('./service')
+import { i2cMultiPortService } from './service'
 
 async function basicClientService(port, bus, address) {
   console.log('Client Worker')
@@ -64,7 +61,7 @@ else
 {
   const { i2c, bus, address } = workerData
   if(i2c === true) {
-    const i2c = require('i2c-bus')
+    import i2c from 'i2c-bus'
     i2cMultiPortService(parentPort, i2c)
   }
   else { basicClientService(parentPort, bus, address) }

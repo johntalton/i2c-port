@@ -51,7 +51,6 @@ if(!hostOnly) {
             .split('')
             .map(b => b.charCodeAt(0))
 
-          //console.log('decoding', buf)
           msg.buffer = Buffer.from(buf)
         }
 
@@ -130,14 +129,15 @@ if(!hostOnly) {
 
   function handleWSUpgradeOverWSServer(wsServer) {
     return (request, socket, head) => {
-      //const ip = req.headers['x-forwarded-for'].split(/\s*,\s*/)[0]
-      //const ip = req.socket.remoteAddress
+      const ip = request.headers['x-forwarded-for'].split(/\s*,\s*/)[0]
+      const raw_ip = request.socket.remoteAddress
+
       const pathname = url.parse(request.url).pathname
       const protocols = request.headers['sec-websocket-protocol']
         ?.split(',')?.map(s => s.trim())
         ?? []
 
-      console.log('path / protocols', pathname, protocols)
+      console.log('path / protocols', pathname, protocols, ip, raw_ip)
 
       if(!protocols.includes('i2c')) {
         console.log('no matching protocol - drop');

@@ -25,6 +25,12 @@ export class I2CPort {
     return { namespace, opaque, bus, address }
   }
 
+  private static readBufferFromMessageOrAlloc(message: m.Message & m.WithLength): Buffer {
+    const { length } = message
+    return Buffer.alloc(length)
+  }
+
+
   private static async sendByte(bus: I2CBus, message: m.SendByte): Promise<m.WriteResult> {
     const { address, byte } = message
     const echo = I2CPort.echoMessage(message)
@@ -40,8 +46,8 @@ export class I2CPort {
     const { address, length } = message
     const echo = I2CPort.echoMessage(message)
     try {
-      const buffer = Buffer.alloc(length)
-      const { bytesRead } = await bus.i2cRead(address, buffer.length, buffer)
+      const in_buffer = I2CPort.readBufferFromMessageOrAlloc(message)
+      const { bytesRead, buffer } = await bus.i2cRead(address, length, in_buffer)
       return { ...echo, type: 'readResult', bytesRead, buffer: buffer.slice(0, bytesRead) }
     } catch(e) {
       return { ...echo, type: 'error', why: 'read: ' + e.errno + e.message }
@@ -64,11 +70,11 @@ export class I2CPort {
     const { address, cmd, length } = message
     const echo = I2CPort.echoMessage(message)
     try {
-      const buffer = Buffer.alloc(length)
-      const { bytesRead } = await bus.readI2cBlock(address, cmd, buffer.length, buffer)
+      const in_buffer = I2CPort.readBufferFromMessageOrAlloc(message)
+      const { bytesRead, buffer } = await bus.readI2cBlock(address, cmd, length, in_buffer)
       return { ...echo, type: 'readResult', bytesRead, buffer: buffer.slice(0, bytesRead) }
     } catch(e) {
-      return { ...echo, type: 'error', why: 'readBlock: ' + e.errno + e.message }
+      return { ...echo, type: 'error', why: 'readBlock: ' + e.errno + ' ' + e.message }
     }
   }
 

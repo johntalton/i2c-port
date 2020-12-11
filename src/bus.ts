@@ -41,7 +41,7 @@ export class I2CPortBus implements I2CBus {
         reject(new Error('closed'))
       })
 
-      if('buffer' in call) {
+      if('buffer' in call && call.buffer) {
         port.postMessage(call, [ call.buffer.buffer ])
       }
       else {
