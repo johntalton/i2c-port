@@ -40,7 +40,9 @@
     const uiScriptElem = document.querySelector('script[src = "./ui.js"]')
     uiScriptElem.onload = event => console.log('ui Load', event)
 
-    document.addEventListener("DOMContentLoaded", () => { console.log('DOM Content Loaded'); connect() })
+    connect()
+
+    document.addEventListener("DOMContentLoaded", () => { console.log('DOM Content Loaded');  })
   </script>
  </head>
  <body>
