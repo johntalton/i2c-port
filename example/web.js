@@ -1,16 +1,16 @@
 /* eslint-disable no-inner-declarations */
-const { Worker, MessageChannel } = require('worker_threads')
-const { performance, PerformanceObserver } = require('perf_hooks')
-const { Buffer } = require('buffer')
-const { console } = require('console')
+import { Worker, MessageChannel } from 'worker_threads'
+import { performance, PerformanceObserver } from 'perf_hooks'
+import { Buffer } from 'buffer'
+// import { console } from 'console'
 
-const url = require('url')
+import url from 'url'
 
 //const http = require('http')
-const express = require('express')
-const WebSocket = require('ws')
+import express from 'express'
+import WebSocket from 'ws'
 //const { v4: uuidv4 } = require('uuid');
-const morgan = require('morgan')
+import morgan from 'morgan'
 
 const hostOnly = process.argv.includes('--hostOnly')
 const MORGAN_EXT = ':status :method :url HTTP/:http-version  :remote-addr @ :response-time ms\x1b[0m'
@@ -151,9 +151,15 @@ if(!hostOnly) {
     }
   }
 
-  const serviceUrl = __dirname + '/service.js' // user path.concat
-  const i2cWorker = new Worker(serviceUrl)
+  const serviceUrl = './example/service-worker.js'
+  const i2cWorker = new Worker(serviceUrl, {
+    //name: 'I2C',
+    //type: 'module',
+    //credentials: 'same-origin'
+  })
+
   i2cWorker.on('message', event => console.log('worker said', event))
+  i2cWorker.on('error', event => console.log('worker error', event))
   i2cWorker.on('exit', event => console.log('worker exit', event))
 
   const i2cWSServer = new WebSocket.Server({ noServer: true })

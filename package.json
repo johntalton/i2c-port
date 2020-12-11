@@ -2,10 +2,10 @@
   "name": "@johntalton/i2c-port",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/index.js",
+  "main": "./lib/index.js",
   "exports": {
-    "import": "./src/index.ts",
-    "require": "./lib/src/index.js"
+    "import": "./lib/index.js",
+    "require": "./lib/index.js"
   },
   "type": "module",
   "files": [
@@ -50,6 +50,17 @@
     "test:web": "node example/web.js",
     "test:web:host": "node example/web.js --hostOnly",
     "test:web:watch": "nodemon example/web.js"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/*.spec.ts",
+      ".git",
+      ".vscode",
+      "node_modules"
+    ],
+    "watch": [
+      "src"
+    ]
   },
   "eslintConfig": {
     "extends": [
@@ -99,7 +110,8 @@
           "identifiers": false,
           "minLength": 3,
           "skipWords": [
-            "johntalton", "Promisified"
+            "johntalton",
+            "Promisified"
           ]
         }
       ]

@@ -1,16 +1,18 @@
-const { MessageChannel } = require('worker_threads')
-const { console } = require('console')
+import { MessageChannel } from 'worker_threads'
 
-const i2c = require('i2c-bus')
+import i2c from 'i2c-bus'
 
-const { BoschIEU } = require('@johntalton/boschieu')
-const { I2CAddressedBus } = require('@johntalton/and-other-delights')
+import bosch from '@johntalton/boschieu'
+import aod from '@johntalton/and-other-delights'
 
-const { i2cMultiPortService } = require('./service')
-const { I2CPortBus } = require('../')
+import { I2CPortBus } from '@johntalton/i2c-port'
+import { i2cMultiPortService } from './service.js'
+
+const { BoschIEU } = bosch
+const { I2CAddressedBus } = aod
 
 async function ieu(port, bus) {
-  console.log('IEU Client')
+  console.log('IEU Client - single thread port abstraction')
 
   try {
     const i2cN = await I2CPortBus.openPromisified(port, bus)

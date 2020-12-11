@@ -1,10 +1,9 @@
-const { isMainThread, parentPort } = require('worker_threads')
-const { Buffer } = require('buffer')
-const { console } = require('console')
+import { Buffer } from 'buffer'
 
-const { I2CPort } = require('../')
+import { I2CPort } from '@johntalton/i2c-port'
+//import { I2CPort } from '../lib/index.js'
 
-function i2cMultiPortService(servicePort, i2cFactory) {
+export function i2cMultiPortService(servicePort, i2cFactory) {
 
   let clients = []
 
@@ -63,12 +62,3 @@ function i2cMultiPortService(servicePort, i2cFactory) {
   servicePort.on('close', () => { console.log('close service port'); clients.forEach(p => p.close()) })
 }
 
-// null false - worker
-// <obj> true - port / include
-if(module.parent === null && !isMainThread) {
-  const i2c = require('i2c-bus')
-
-  i2cMultiPortService(parentPort, i2c)
-}
-
-module.exports = { i2cMultiPortService }
