@@ -4,8 +4,10 @@ import chaiMod from 'chai'
 const { describe, it } = mochaMod
 const { expect } = chaiMod
 
-import { I2CScriptBus, EOS_SCRIPT } from '@johntalton/and-other-delights'
+import aod from '@johntalton/and-other-delights'
 import { I2CPort } from '@johntalton/i2c-port'
+
+const { I2CScriptBus, EOS_SCRIPT } = aod
 
 describe('port', () => {
   describe('handleMessage', () => {

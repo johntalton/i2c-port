@@ -70,7 +70,8 @@
       "node_modules"
     ],
     "watch": [
-      "src"
+      "src",
+      "example"
     ]
   },
   "mocha": {
@@ -140,7 +141,11 @@
           "minLength": 3,
           "skipWords": [
             "johntalton",
-            "Promisified", "favicon", "ico", "addr", "messageerror"
+            "Promisified",
+            "favicon",
+            "ico",
+            "addr",
+            "messageerror"
           ]
         }
       ]
