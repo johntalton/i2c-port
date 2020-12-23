@@ -71,7 +71,8 @@
       "node_modules"
     ],
     "watch": [
-      "src"
+      "src",
+      "example"
     ]
   },
   "mocha": {

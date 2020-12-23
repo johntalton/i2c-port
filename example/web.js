@@ -23,6 +23,8 @@ const app = express()
 
 const server = app.listen(9000, () => console.log('Service Up'))
 
+const enableEncoding = true
+
 if(!hostOnly) {
   function ab2str(buf) {
     return String.fromCharCode.apply(null, new Uint16Array(buf));
@@ -31,10 +33,12 @@ if(!hostOnly) {
   class MessageTransform {
     static portMessageToStringMessage(message) {
       if(message.buffer) {
+        if(!enableEncoding) { return JSON.stringify({ ...message, buffer: message.buffer.toString() }) }
+
         const s = ab2str(message.buffer)
         console.log(message.buffer, Buffer.from(s, 'binary'))
         const buffer  = Buffer.from(message.buffer).toString('base64')
-        console.log('i2c message converted to ws string', buffer)
+        //console.log('i2c message converted to ws string', buffer)
         return JSON.stringify({ ...message, buffer })
       }
 
@@ -46,6 +50,8 @@ if(!hostOnly) {
 
         const msg = encodedMsg
         if(msg.buffer) {
+          if(!enableEncoding) { msg.buffer = msg.buffer.split(',').map(y => parseInt(y, 10)); return msg }
+
           const buf = Buffer.from(msg.buffer, 'base64')
             .toString()
             .split('')
@@ -62,10 +68,12 @@ if(!hostOnly) {
     function handleWSMessageOverPort(port) {
       function postMessageOnPort(port, msg) {
         if(msg.type !== undefined) {
-          if(msg.buffer) {
+          if(enableEncoding && msg.buffer) {
+            //console.log(' RAW WS MESSAGE [transfer]', msg)
             port.postMessage(msg, [ msg.buffer.buffer ])
           }
           else {
+            //console.log(' RAW WS MESSAGE', msg)
             port.postMessage(msg)
           }
         }
@@ -129,7 +137,7 @@ if(!hostOnly) {
 
   function handleWSUpgradeOverWSServer(wsServer) {
     return (request, socket, head) => {
-      const ip = request.headers['x-forwarded-for'].split(/\s*,\s*/)[0]
+      const ip = request.headers['x-forwarded-for']?.split(/\s*,\s*/)[0]
       const raw_ip = request.socket.remoteAddress
 
       const pathname = url.parse(request.url).pathname
@@ -167,7 +175,7 @@ if(!hostOnly) {
   server.on('upgrade', handleWSUpgradeOverWSServer(i2cWSServer))
 
   const o = new PerformanceObserver((list, observer) => {
-    console.log('observation: ', list.getEntriesByType('measure'))
+    console.log('⏱ observations: ', list.getEntriesByType('measure').map(ob => ob.name + ' ' + ob.duration))
   })
   o.observe({ buffered: true, entryTypes: [ 'measure' ] })
 
