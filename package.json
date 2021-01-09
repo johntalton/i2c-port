@@ -98,6 +98,26 @@
     ],
     "env": {
       "node": true
+    },
+    "rules": {
+      "spellcheck/spell-checker": [
+        "error",
+        {
+          "minLength": 4,
+          "skipWords": [
+            "favicon",
+            "namespace",
+            "promisified",
+            "Uint",
+            "alloc",
+            "errno",
+            "addr",
+            "argv",
+            "morgan",
+            "uuidv4"
+          ]
+        }
+      ]
     }
   },
   "repository": {

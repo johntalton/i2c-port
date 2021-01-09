@@ -56,13 +56,12 @@ if (isMainThread) {
     })
 
   setTimeout(() => { clients.forEach(client => client.worker.terminate()); i2cWorker.terminate() }, 1000)
-}
-else
-{
+} else {
   const { i2c, bus, address } = workerData
   if(i2c === true) {
     import i2c from 'i2c-bus'
     i2cMultiPortService(parentPort, i2c)
+  } else {
+    basicClientService(parentPort, bus, address)
   }
-  else { basicClientService(parentPort, bus, address) }
 }

@@ -5,13 +5,22 @@
   <script async defer src="./ui.js"></script>
   <script type="module">
     import { MessageTransform } from './message-transform.js'
+    import { I2CWebBus } from './i2c-web-bus.js'
+    import { I2CAddressedBus } from './i2c-addressed.js'
+    import { Tca9548a } from './tca9548.js'
+
+    let bus
 
     export function connect() {
       const ws = new WebSocket('ws://192.168.1.211:9000/bus', [ 'i2c', 'json' ])
-      ws.onmessage = event => ui_insert(MessageTransform.stringMessageToMessage(event.data))
       ws.onerror = event => console.log('webSocket error', event)
       ws.onclose = event => console.log('webSocket close', event.code, event.reason)
-      ws.onopen = event => sendTestScript(ws)
+      //ws.onopen = event => sendTestScript(ws)
+      //ws.onmessage = event => ui_insert(MessageTransform.stringMessageToMessage(event.data))
+
+      ws.onopen = event => connectToBus(ws)
+      ws.onmessage = event => I2CWebBus.onMessage(bus, MessageTransform.stringMessageToMessage(event.data))
+
     }
 
     function sendTestScript(ws) {
@@ -36,6 +45,22 @@
         cmd: 0x15, length: 10
       }))
     }
+
+    async function connectToBus(ws) {
+      bus = await I2CWebBus.openPromisified(1, ws)
+      const ab = new I2CAddressedBus(bus, 0x70)
+      const tca = await Tca9548a.from(ab)
+
+      const initialChannels = await tca.getChannels()
+      console.log(initialChannels)
+
+      await tca.setChannels([ 3, 5 ])
+
+      const channels = await tca.getChannels()
+      console.log(channels)
+
+    }
+
 
     const uiScriptElem = document.querySelector('script[src = "./ui.js"]')
     uiScriptElem.onload = event => console.log('ui Load', event)

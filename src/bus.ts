@@ -6,7 +6,7 @@ import {
   I2CReadResult, I2CWriteResult
 } from '@johntalton/and-other-delights'
 
-import { ReadWrite  } from './messages'
+import { ReadWrite } from './messages'
 
 export class I2CPortBus implements I2CBus {
   readonly port: MessagePort
@@ -18,7 +18,7 @@ export class I2CPortBus implements I2CBus {
   }
 
   private constructor(port: MessagePort, busNumber: I2CBusNumber) {
-    this.port = port;
+    this.port = port
     this.busNumber = busNumber
     this.namespace = ''
   }
@@ -31,7 +31,7 @@ export class I2CPortBus implements I2CBus {
       const timer = setTimeout(() => reject(new Error('timeout')), timeoutMS)
 
       port.on('message', message => {
-        if(message.type === 'error') { return reject(new Error(message.why)) }
+        if(message.type === 'error') { reject(new Error(message.why)); return }
         resolve(message)
         clearTimeout(timer)
         port.close()
@@ -43,8 +43,7 @@ export class I2CPortBus implements I2CBus {
 
       if('buffer' in call && call.buffer) {
         port.postMessage(call, [ call.buffer.buffer ])
-      }
-      else {
+      } else {
         port.postMessage(call)
       }
     })
@@ -67,7 +66,7 @@ export class I2CPortBus implements I2CBus {
     })
   }
 
-  readI2cBlock(address: I2CAddress, cmd: number, length: number, buffer: Buffer): Promise<I2CReadResult> {
+  readI2cBlock(address: I2CAddress, cmd: number, length: number, _buffer: Buffer): Promise<I2CReadResult> {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
       type: 'readBlock',
@@ -89,7 +88,7 @@ export class I2CPortBus implements I2CBus {
     })
   }
 
-  i2cRead(address: I2CAddress, length: number, buffer: Buffer): Promise<I2CReadResult> {
+  i2cRead(address: I2CAddress, length: number, _buffer: Buffer): Promise<I2CReadResult> {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
       type: 'read',

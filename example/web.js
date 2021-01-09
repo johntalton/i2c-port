@@ -6,10 +6,10 @@ import { Buffer } from 'buffer'
 
 import url from 'url'
 
-//const http = require('http')
+// const http = require('http')
 import express from 'express'
 import WebSocket from 'ws'
-//const { v4: uuidv4 } = require('uuid');
+// const { v4: uuidv4 } = require('uuid');
 import morgan from 'morgan'
 
 const hostOnly = process.argv.includes('--hostOnly')
@@ -18,7 +18,7 @@ const MORGAN_EXT = ':status :method :url HTTP/:http-version  :remote-addr @ :res
 const app = express()
   .use(morgan(MORGAN_EXT))
   .use('/', express.static('example/web'))
-  .use((req, res, next) => { req.path === '/favicon.ico' ? res.status(200).end() : next() })
+  .use((req, res, next) => { if(req.path === '/favicon.ico') { res.status(200).end(); return } next() })
   .use((req, res, next) => next(new Error('🎁 ' + req.originalUrl)))
 
 const server = app.listen(9000, () => console.log('Service Up'))
@@ -27,7 +27,7 @@ const enableEncoding = true
 
 if(!hostOnly) {
   function ab2str(buf) {
-    return String.fromCharCode.apply(null, new Uint16Array(buf));
+    return String.fromCharCode.apply(null, new Uint16Array(buf))
   }
 
   class MessageTransform {
@@ -38,7 +38,7 @@ if(!hostOnly) {
         const s = ab2str(message.buffer)
         console.log(message.buffer, Buffer.from(s, 'binary'))
         const buffer  = Buffer.from(message.buffer).toString('base64')
-        //console.log('i2c message converted to ws string', buffer)
+        // console.log('i2c message converted to ws string', buffer)
         return JSON.stringify({ ...message, buffer })
       }
 
@@ -46,21 +46,21 @@ if(!hostOnly) {
     }
 
     static stringMessageToPortMessage(message) {
-        const encodedMsg = JSON.parse(message)
+      const encodedMsg = JSON.parse(message)
 
-        const msg = encodedMsg
-        if(msg.buffer) {
-          if(!enableEncoding) { msg.buffer = msg.buffer.split(',').map(y => parseInt(y, 10)); return msg }
+      const msg = encodedMsg
+      if(msg.buffer) {
+        if(!enableEncoding) { msg.buffer = msg.buffer.split(',').map(y => parseInt(y, 10)); return msg }
 
-          const buf = Buffer.from(msg.buffer, 'base64')
-            .toString()
-            .split('')
-            .map(b => b.charCodeAt(0))
+        const buf = Buffer.from(msg.buffer, 'base64')
+        //  .toString()
+        //  .split('')
+        //  .map(b => b.charCodeAt(0))
 
-          msg.buffer = Buffer.from(buf)
-        }
+        msg.buffer = Buffer.from(buf)
+      }
 
-        return msg
+      return msg
     }
   }
 
