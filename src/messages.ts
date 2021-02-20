@@ -1,6 +1,6 @@
 export type NodeLikeBuffer = Uint8Array | Uint8ClampedArray | Buffer
-export type WebLikeBuffer = ArrayBuffer
-export type PortBuffer = NodeLikeBuffer
+export type WebLikeBuffer = ArrayBuffer | ArrayBufferView | SharedArrayBuffer
+export type PortBuffer = WebLikeBuffer
 
 export type WithNamespace = { namespace: string | '' }
 export type WithType = { type: string }
@@ -20,11 +20,11 @@ export type Error = { type: 'error', why: string } & Message
 export type Success = { type: 'success' } & Message
 
 // core request message
-export type SendByte = { type: 'sendByte', byte: number } & Message
-export type Read = { type: 'read' } & WithInBuffer & WithLength & Message
-export type Write = { type: 'write' } & WithBuffer & WithOutLength & Message
-export type ReadBlock = { type: 'readBlock' } & WithInBuffer & WithLength & WithCommand & Message
-export type WriteBlock = { type: 'writeBlock' } & WithBuffer & WithOutLength & WithCommand & Message
+export type SendByte = { type: 'sendByte', byteValue: number } & Message
+export type Read = { type: 'i2cRead' } & WithInBuffer & WithLength & Message
+export type Write = { type: 'i2cWrite' } & WithBuffer & WithOutLength & Message
+export type ReadBlock = { type: 'readI2cBlock' } & WithInBuffer & WithLength & WithCommand & Message
+export type WriteBlock = { type: 'writeI2cBlock' } & WithBuffer & WithOutLength & WithCommand & Message
 
 // core results
 export type ReadResult = { type: 'readResult', bytesRead: number } & WithResultBuffer & Message | Error

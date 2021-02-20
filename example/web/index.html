@@ -6,13 +6,15 @@
   <script type="module">
     import { MessageTransform } from './message-transform.js'
     import { I2CWebBus } from './i2c-web-bus.js'
-    import { I2CAddressedBus } from './i2c-addressed.js'
+    //import { I2CAddressedBus } from './i2c-addressed.js'
+    import { I2CAddressedBus } from './node_modules/@johntalton/and-other-delights/lib/aod.js'
+
     import { Tca9548a } from './tca9548.js'
 
     let bus
 
     export function connect() {
-      const ws = new WebSocket('ws://192.168.1.211:9000/bus', [ 'i2c', 'json' ])
+      const ws = new WebSocket('ws://192.168.1.10:9000/bus/1', [ 'i2c', 'json' ])
       ws.onerror = event => console.log('webSocket error', event)
       ws.onclose = event => console.log('webSocket close', event.code, event.reason)
       //ws.onopen = event => sendTestScript(ws)
@@ -47,7 +49,7 @@
     }
 
     async function connectToBus(ws) {
-      bus = await I2CWebBus.openPromisified(1, ws)
+      bus = await I2CWebBus.openPromisified(ws)
       const ab = new I2CAddressedBus(bus, 0x70)
       const tca = await Tca9548a.from(ab)
 

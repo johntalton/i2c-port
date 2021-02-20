@@ -1,12 +1,10 @@
 /* eslint-disable max-classes-per-file */
-//import { I2CBus } from '@johntalton/and-other-delights'
+//import { I2CBus } from './aod.min.js'
 import { MessageTransform } from './message-transform.js'
 
-class I2CBus {}
-
-export class I2CWebBus extends I2CBus {
-  static openPromisified(busNumber, ws) {
-    return Promise.resolve(new I2CWebBus(busNumber, ws))
+export class I2CWebBus /* extends I2CBus */ {
+  static openPromisified(ws) {
+    return Promise.resolve(new I2CWebBus(ws))
   }
 
   static onMessage(self, message) {
@@ -48,7 +46,6 @@ export class I2CWebBus extends I2CBus {
 
     this.pendingTransactions.set(id, {
       opaque: id,
-      bus: this.busNumber,
 
       ...message,
 
@@ -72,10 +69,8 @@ export class I2CWebBus extends I2CBus {
   }
 
 
-  constructor(busNumber, ws) {
-    super()
+  constructor(ws) {
     this.ws = ws
-    this.busNumber = busNumber
     this.nextId = 0
     this.pendingTransactions = new Map()
   }

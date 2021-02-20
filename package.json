@@ -1,6 +1,6 @@
 {
   "name": "@johntalton/i2c-port",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "./lib/index.js",
   "exports": {
@@ -16,9 +16,9 @@
   ],
   "types": "lib/index.d.ts",
   "devDependencies": {
-    "@johntalton/and-other-delights": "^3.0.2",
+    "@johntalton/and-other-delights": "^5.0.0",
     "@johntalton/boschieu": "^4.0.0",
-    "@johntalton/eslint-config": "github:johntalton/eslint-config",
+    "@johntalton/eslint-config": "^2.0.0",
     "@types/chai": "^4.2.14",
     "@types/i2c-bus": "^5.1.0",
     "@types/mocha": "^8.2.0",
@@ -31,7 +31,6 @@
     "eslint-plugin-functional": "^3.1.0",
     "eslint-plugin-immutable": "^1.0.0",
     "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jsdoc": "^30.7.9",
     "eslint-plugin-mocha": "^8.0.0",
     "eslint-plugin-no-loops": "^0.3.0",
     "eslint-plugin-no-use-extend-native": "^0.5.0",
@@ -100,6 +99,13 @@
       "node": true
     },
     "rules": {
+      "max-len": ["warn", { "code": 120 }],
+
+      "fp/no-class": "off",
+      "fp/no-nil": "off",
+      "fp/no-mutation": "off",
+      "immutable/no-mutation": "off",
+      "fp/no-unused-expression": "off",
       "spellcheck/spell-checker": [
         "error",
         {

@@ -17,7 +17,7 @@ const MORGAN_EXT = ':status :method :url HTTP/:http-version  :remote-addr @ :res
 
 const app = express()
   .use(morgan(MORGAN_EXT))
-  .use('/', express.static('example/web'))
+  .use('/', express.static('example/web', { extensions: ['js'] }))
   .use((req, res, next) => { if(req.path === '/favicon.ico') { res.status(200).end(); return } next() })
   .use((req, res, next) => next(new Error('🎁 ' + req.originalUrl)))
 
@@ -142,13 +142,12 @@ if(!hostOnly) {
 
       const pathname = url.parse(request.url).pathname
       const protocols = request.headers['sec-websocket-protocol']
-        ?.split(',')?.map(s => s.trim())
-        ?? []
+        ?.split(',')?.map(s => s.trim()) ?? []
 
       console.log('path / protocols', pathname, protocols, ip, raw_ip)
 
       if(!protocols.includes('i2c')) {
-        console.log('no matching protocol - drop');
+        console.log('no matching protocol - drop')
         // we could `socket.write()` but unknown what it should be (HTTP/1 header?)
         socket.destroy()
       }
@@ -161,9 +160,9 @@ if(!hostOnly) {
 
   const serviceUrl = './example/service-worker.js'
   const i2cWorker = new Worker(serviceUrl, {
-    //name: 'I2C',
-    //type: 'module',
-    //credentials: 'same-origin'
+    // name: 'I2C',
+    // type: 'module',
+    // credentials: 'same-origin'
   })
 
   i2cWorker.on('message', event => console.log('worker said', event))
@@ -171,10 +170,10 @@ if(!hostOnly) {
   i2cWorker.on('exit', event => console.log('worker exit', event))
 
   const i2cWSServer = new WebSocket.Server({ noServer: true })
-  i2cWSServer.on('connection', handleWSConnectionOverServicePort(i2cWorker, 'i2c'));
+  i2cWSServer.on('connection', handleWSConnectionOverServicePort(i2cWorker, 'i2c'))
   server.on('upgrade', handleWSUpgradeOverWSServer(i2cWSServer))
 
-  const o = new PerformanceObserver((list, observer) => {
+  const o = new PerformanceObserver((list, _observer) => {
     console.log('⏱ observations: ', list.getEntriesByType('measure').map(ob => ob.name + ' ' + ob.duration))
   })
   o.observe({ buffered: true, entryTypes: [ 'measure' ] })
