@@ -21,8 +21,8 @@ export class I2CPort {
   }
 
   private static echoMessage(message: m.Message): m.WithNamespace & m.WithOpaque & m.WithAddress {
-    const { namespace, opaque, bus, address } = message
-    return { namespace, opaque, bus, address }
+    const { namespace, opaque, address } = message
+    return { namespace, opaque, address }
   }
 
   private static readBufferFromMessageOrAlloc(message: m.Message & m.WithLength): ArrayBuffer {
@@ -50,7 +50,7 @@ export class I2CPort {
       const { bytesRead, buffer } = await bus.i2cRead(address, length, in_buffer)
       return { ...echo, type: 'readResult', bytesRead, buffer: buffer.slice(0, bytesRead) }
     } catch (e) {
-      return { ...echo, type: 'error', why: 'read: ' + e.errno + e.message }
+      return { ...echo, type: 'error', why: 'read: ' + e.message }
     }
   }
 
@@ -61,7 +61,7 @@ export class I2CPort {
       const { bytesWritten } = await bus.i2cWrite(address, buffer.byteLength, buffer)
       return { ...echo, type: 'writeResult', bytesWritten }
     } catch (e) {
-      return { ...echo, type: 'error', why: 'writeBlock: ' + e.message }
+      return { ...echo, type: 'error', why: 'write: ' + e.message }
     }
   }
 

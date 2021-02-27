@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
-//import { I2CBus } from './aod.min.js'
+//import { I2CBus } from './node_modules/@johntalton/and-other-delights/lib/aod.js'
+
 import { MessageTransform } from './message-transform.js'
 
 export class I2CWebBus /* extends I2CBus */ {
@@ -7,31 +8,41 @@ export class I2CWebBus /* extends I2CBus */ {
     return Promise.resolve(new I2CWebBus(ws))
   }
 
-  static onMessage(self, message) {
-    const { opaque: id, type, buffer } = message
+  /**
+   * @param self {I2CWebBus} bus on which to apply message
+   * @param encodedMessage {string}
+   * @return {void}
+   */
+  static onMessage(self, encodedMessage) {
+    const message = MessageTransform.decodeMessage(encodedMessage)
+    const { opaque: id, type } = message
 
     const transaction = self.pendingTransactions.get(id)
     if(transaction === undefined) {
       console.warn('unknown transaction message', message)
     }
 
-    console.debug(message)
-
     if(type === 'error') {
+      //console.log('rejecting transaction', id)
       clearTimeout(transaction.timer)
       self.pendingTransactions.delete(id)
       transaction.reject(new Error(message.why))
       return
     }
 
-    console.log('resolving transaction', id)
+    //console.log('resolving transaction', id)
     clearTimeout(transaction.timer)
     self.pendingTransactions.delete(id)
-    transaction.resolve({ buffer })
+    transaction.resolve(message)
 
   }
 
-  async transact(type, message) {
+  /**
+   * @param type {string}
+   * @param message {Transaction}
+   * @return {Promise<void>} async result of transaction
+   */
+  transact(type, message) {
     const id = this.nextId
     this.nextId++
 
@@ -39,7 +50,7 @@ export class I2CWebBus /* extends I2CBus */ {
 
     let capturedResolve
     let capturedReject
-    const p = new Promise((resolve, reject) => {
+    const futureResult = new Promise((resolve, reject) => {
       capturedResolve = resolve
       capturedReject = reject
     })
@@ -49,23 +60,21 @@ export class I2CWebBus /* extends I2CBus */ {
 
       ...message,
 
-      futureResult: p,
+      futureResult,
       resolve: capturedResolve,
       reject: capturedReject,
       timer: setTimeout(() => { this.pendingTransactions.delete(id); capturedReject(new Error('Timed Out')) }, transactionTimeoutMS)
     })
 
-    console.debug({ type, message })
-    this.ws.send(MessageTransform.messageToStringMessage({
+    this.ws.send(MessageTransform.encodeMessage({
       opaque: id,
       type,
-      bus: this.busNumber,
 
       ...message
     }))
 
 
-    return p
+    return futureResult
   }
 
 
@@ -75,23 +84,23 @@ export class I2CWebBus /* extends I2CBus */ {
     this.pendingTransactions = new Map()
   }
 
-  sendByte(address, byte) {
-
+  sendByte(address, byteValue) {
+    return this.transact('sendByte', { address, byteValue })
   }
 
-  readI2cBlock(address, cmd, length, buffer) {
-
+  readI2cBlock(address, cmd, length, readBuffer) {
+    return this.transact('readI2cBlock', { address, cmd, length })
   }
 
   writeI2cBlock(address, cmd, length, buffer) {
-
+    return this.transact('writeI2cBlock', { address, cmd, length, buffer })
   }
 
-  i2cRead(address, length, buffer) {
-    return this.transact('read', { address, length, buffer })
+  i2cRead(address, length, readBuffer) {
+    return this.transact('i2cRead', { address, length })
   }
 
   i2cWrite(address, length, buffer) {
-    return this.transact('write', { address, length, buffer })
+    return this.transact('i2cWrite', { address, length, buffer })
   }
 }

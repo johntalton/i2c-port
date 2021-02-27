@@ -1,61 +1,31 @@
-import { Buffer } from 'buffer'
-
 import { I2CPort } from '@johntalton/i2c-port'
-//import { I2CPort } from '../lib/index.js'
 
-export function i2cMultiPortService(servicePort, i2cFactory) {
+export function i2cMultiPortService(servicePort, bus) {
 
-  let clients = []
+  const clients = new Set()
 
-  servicePort.on('message', async connectMessage => {
-    console.log('i2c client connect message')
+  servicePort.on('message', connectMessage => {
+    console.log('service port client connect message')
     const { port } = connectMessage
 
-    let busX = undefined;
-    //    busX = await i2cFactory.openPromisified(1)
-
-
-    clients = [...clients, port]
+    clients.add(port)
 
     port.on('message', async clientMessage => {
-      // console.log('i2c received client message', clientMessage)
-      const { bus } = clientMessage
-
-      if(busX === undefined) {
-        console.log('i2c allocate bus from factory', bus)
-        if(bus !== 1) {
-          console.log('i2c invalid bus number', bus)
-          port.postMessage({ opaque: clientMessage.opaque, type: 'error', why: 'invalid bus number' })
-          return
-        }
-
-        //
-        busX = await i2cFactory.openPromisified(bus)
-      }
-
-      if(clientMessage.buffer !== undefined) {
-        clientMessage.buffer = Buffer.from(clientMessage.buffer)
-      }
-
-      const result = await I2CPort.handleMessage(busX, clientMessage)
-
-      port.postMessage(result, result.buffer ? [ result.buffer.buffer ] : [])
+      const result = await I2CPort.handleMessage(bus, clientMessage)
+      port.postMessage(result, result.buffer !== undefined ? [ result.buffer ] : [])
     })
 
     port.on('close', () => {
-      console.log('I2CWorker Client goodbye')
+      console.log('client port goodbye')
 
-      if(!clients.includes(port)) { console.log('client port not in clients list') }
-      clients = clients.filter(p => p !== port)
-
+      if(!clients.has(port)) { console.warn('client port not in clients list') }
+      clients.delete(port)
       port.close()
-
-      if(busX !== undefined) { busX.close() }
     })
 
-    port.on('messageerror', e => console.log('I2CWorker Client message error', e))
+    port.on('messageerror', e => console.warn('client port message error', e))
   })
 
-  servicePort.on('messageerror', error => console.log('message error', error))
+  servicePort.on('messageerror', error => console.warn('service port message error', error))
   servicePort.on('close', () => { console.log('close service port'); clients.forEach(p => p.close()) })
 }

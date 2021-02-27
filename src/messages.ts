@@ -1,11 +1,8 @@
-export type NodeLikeBuffer = Uint8Array | Uint8ClampedArray | Buffer
-export type WebLikeBuffer = ArrayBuffer | ArrayBufferView | SharedArrayBuffer
-export type PortBuffer = WebLikeBuffer
-
+export type PortBuffer = ArrayBuffer | ArrayBufferView | SharedArrayBuffer
 export type WithNamespace = { namespace: string | '' }
 export type WithType = { type: string }
 export type WithOpaque = { opaque?: string }
-export type WithAddress = { bus: number, address: number }
+export type WithAddress = { address: number }
 export type WithCommand = { cmd: number } & WithAddress
 export type WithBuffer = { buffer: PortBuffer }
 export type WithInBuffer = { buffer?: PortBuffer }

@@ -1,7 +1,6 @@
 /* eslint-disable no-inner-declarations */
 import { Worker, MessageChannel } from 'worker_threads'
 import { performance, PerformanceObserver } from 'perf_hooks'
-import { Buffer } from 'buffer'
 // import { console } from 'console'
 
 import url from 'url'
@@ -11,6 +10,8 @@ import express from 'express'
 import WebSocket from 'ws'
 // const { v4: uuidv4 } = require('uuid');
 import morgan from 'morgan'
+
+import { MessageTransform } from './message-transform.js'
 
 const hostOnly = process.argv.includes('--hostOnly')
 const MORGAN_EXT = ':status :method :url HTTP/:http-version  :remote-addr @ :response-time ms\x1b[0m'
@@ -23,54 +24,17 @@ const app = express()
 
 const server = app.listen(9000, () => console.log('Service Up'))
 
-const enableEncoding = true
 
 if(!hostOnly) {
-  function ab2str(buf) {
-    return String.fromCharCode.apply(null, new Uint16Array(buf))
-  }
 
-  class MessageTransform {
-    static portMessageToStringMessage(message) {
-      if(message.buffer) {
-        if(!enableEncoding) { return JSON.stringify({ ...message, buffer: message.buffer.toString() }) }
-
-        const s = ab2str(message.buffer)
-        console.log(message.buffer, Buffer.from(s, 'binary'))
-        const buffer  = Buffer.from(message.buffer).toString('base64')
-        // console.log('i2c message converted to ws string', buffer)
-        return JSON.stringify({ ...message, buffer })
-      }
-
-      return JSON.stringify(message)
-    }
-
-    static stringMessageToPortMessage(message) {
-      const encodedMsg = JSON.parse(message)
-
-      const msg = encodedMsg
-      if(msg.buffer) {
-        if(!enableEncoding) { msg.buffer = msg.buffer.split(',').map(y => parseInt(y, 10)); return msg }
-
-        const buf = Buffer.from(msg.buffer, 'base64')
-        //  .toString()
-        //  .split('')
-        //  .map(b => b.charCodeAt(0))
-
-        msg.buffer = Buffer.from(buf)
-      }
-
-      return msg
-    }
-  }
 
   function handleWSConnectionOverServicePort(servicePort, serviceName) {
     function handleWSMessageOverPort(port) {
       function postMessageOnPort(port, msg) {
         if(msg.type !== undefined) {
-          if(enableEncoding && msg.buffer) {
-            //console.log(' RAW WS MESSAGE [transfer]', msg)
-            port.postMessage(msg, [ msg.buffer.buffer ])
+          if(msg.buffer !== undefined) {
+            // console.log(' RAW WS MESSAGE [transfer]', msg)
+            port.postMessage(msg, [ msg.buffer ])
           }
           else {
             //console.log(' RAW WS MESSAGE', msg)
@@ -81,14 +45,14 @@ if(!hostOnly) {
 
       return message => {
         performance.mark('WS:Message:Start')
-        postMessageOnPort(port, MessageTransform.stringMessageToPortMessage(message))
+        postMessageOnPort(port, MessageTransform.decodeMessage(message))
         performance.mark('WS:Message:End')
         performance.measure('WS:Message', 'WS:Message:Start', 'WS:Message:End')
       }
     }
 
     function handleWSError(e) {
-      console.log('ws error ', serviceName, e)
+      console.warn('ws error ', serviceName, e)
     }
 
     function handleWSCloseOverMessagePort(port) {
@@ -100,9 +64,10 @@ if(!hostOnly) {
 
     function handlePortMessageOverWS(ws) {
       return message => {
-        performance.mark()
-        ws.send(MessageTransform.portMessageToStringMessage(message))
-        performance.mark()
+        performance.mark('Port:Message:Start')
+        ws.send(MessageTransform.encodeMessage(message))
+        performance.mark('Port:Message:End')
+        performance.measure('Port:Message', 'Port:Message:Start', 'Port:Message:End')
       }
     }
 
@@ -147,7 +112,7 @@ if(!hostOnly) {
       console.log('path / protocols', pathname, protocols, ip, raw_ip)
 
       if(!protocols.includes('i2c')) {
-        console.log('no matching protocol - drop')
+        console.warn('no matching protocol - drop')
         // we could `socket.write()` but unknown what it should be (HTTP/1 header?)
         socket.destroy()
       }
@@ -158,7 +123,7 @@ if(!hostOnly) {
     }
   }
 
-  const serviceUrl = './example/service-worker.js'
+  const serviceUrl = './example/i2c-script-worker.js' // './example/service-worker.js'
   const i2cWorker = new Worker(serviceUrl, {
     // name: 'I2C',
     // type: 'module',
@@ -166,7 +131,7 @@ if(!hostOnly) {
   })
 
   i2cWorker.on('message', event => console.log('worker said', event))
-  i2cWorker.on('error', event => console.log('worker error', event))
+  i2cWorker.on('error', event => console.warn('worker error', event))
   i2cWorker.on('exit', event => console.log('worker exit', event))
 
   const i2cWSServer = new WebSocket.Server({ noServer: true })

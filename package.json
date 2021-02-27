@@ -15,8 +15,10 @@
     "lib/**/*.js.map"
   ],
   "types": "lib/index.d.ts",
+  "dependencies": {
+    "@johntalton/and-other-delights": "file:../and-other-delights"
+  },
   "devDependencies": {
-    "@johntalton/and-other-delights": "^5.0.0",
     "@johntalton/boschieu": "^4.0.0",
     "@johntalton/eslint-config": "^2.0.0",
     "@types/chai": "^4.2.14",
@@ -99,8 +101,12 @@
       "node": true
     },
     "rules": {
-      "max-len": ["warn", { "code": 120 }],
-
+      "max-len": [
+        "warn",
+        {
+          "code": 120
+        }
+      ],
       "fp/no-class": "off",
       "fp/no-nil": "off",
       "fp/no-mutation": "off",

@@ -12,8 +12,8 @@
 			}
 
 			function runTests(event) {
-				const s2m = MessageTransform.stringMessageToMessage
-				const m2s = MessageTransform.messageToStringMessage
+				const s2m = MessageTransform.decodeMessage
+				const m2s = MessageTransform.encodeMessage
 
 				const fromObjs = [
 					{},

@@ -3,8 +3,8 @@
 import { MessageChannel, MessagePort } from 'worker_threads'
 
 import {
-  I2CAddress, I2CBus,
-  I2CBufferSource,
+  I2CAddress, I2CBufferSource,
+  I2CBus,
   I2CReadResult, I2CWriteResult
 } from '@johntalton/and-other-delights'
 
@@ -12,18 +12,16 @@ import { ReadWrite } from './messages'
 
 export class I2CPortBus implements I2CBus {
   readonly port: MessagePort
-  readonly busNumber: number
   readonly namespace: string
   readonly name: string
 
-  static openPromisified(providerPort: MessagePort, busNumber: number): Promise<I2CPortBus> {
-    return Promise.resolve(new I2CPortBus(providerPort, busNumber))
+  static openPromisified(providerPort: MessagePort): Promise<I2CPortBus> {
+    return Promise.resolve(new I2CPortBus(providerPort))
   }
 
-  private constructor(port: MessagePort, busNumber: number) {
+  private constructor(port: MessagePort) {
     this.name = ''
     this.port = port
-    this.busNumber = busNumber
     this.namespace = ''
   }
 
@@ -46,7 +44,8 @@ export class I2CPortBus implements I2CBus {
       })
 
       if('buffer' in call && call.buffer) {
-        port.postMessage(call, [ call.buffer ])
+        const transferBuffer = ArrayBuffer.isView(call.buffer) ? call.buffer.buffer : call.buffer
+        port.postMessage(call, [ transferBuffer ])
       } else {
         port.postMessage(call)
       }
@@ -63,7 +62,6 @@ export class I2CPortBus implements I2CBus {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
       type: 'sendByte',
-      bus: this.busNumber,
       address,
       byteValue
     })
@@ -73,7 +71,6 @@ export class I2CPortBus implements I2CBus {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
       type: 'readI2cBlock',
-      bus: this.busNumber,
       address,
       cmd,
       length
@@ -84,7 +81,6 @@ export class I2CPortBus implements I2CBus {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
       type: 'writeI2cBlock',
-      bus: this.busNumber,
       address,
       cmd,
       buffer: bufferSource
@@ -95,7 +91,6 @@ export class I2CPortBus implements I2CBus {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
       type: 'i2cRead',
-      bus: this.busNumber,
       address,
       length
     })
@@ -105,7 +100,6 @@ export class I2CPortBus implements I2CBus {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
       type: 'i2cWrite',
-      bus: this.busNumber,
       address,
       buffer: bufferSource
     })

@@ -4,6 +4,7 @@
     "description": "A demo of running a WebSocket service for I2C transactions",
     "type": "module",
     "dependencies": {
-        "@johntalton/and-other-delights": "file:../../../and-other-delights"
+        "@johntalton/and-other-delights": "file:../../../and-other-delights",
+        "@johntalton/tca9548a": "file:../../../tca9548a"
     }
 }

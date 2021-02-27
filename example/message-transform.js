@@ -1,17 +1,17 @@
+const atob = (data) => Buffer.from(data, 'base64').toString('ascii')
+const btoa = (data) => Buffer.from(data).toString('base64')
+
 function arrayBufferToBinaryString(ab) {
+  // return String.fromCharCode.apply(null, new Uint16Array(buf))
   return String.fromCharCode(...new Uint8Array(ab))
 }
 
 function binaryStringToArrayBuffer(binaryString) {
-  const bytes = Uint8Array.from([...binaryString].map(c => c.charCodeAt(0)))
-  return bytes.buffer
+  const buffer = Uint8Array.from([...binaryString].map(c => c.charCodeAt(0)))
+  return buffer.buffer
 }
 
 export class MessageTransform {
-  /**
-   * @param message {Message}
-   * @returns {string} encoded message
-   */
   static encodeMessage(message) {
     if(message.buffer === undefined) { return JSON.stringify(message) }
 
@@ -19,10 +19,6 @@ export class MessageTransform {
     return JSON.stringify({ ...message, buffer })
   }
 
-  /**
-   * @param encodedMessage {string} a valid encoded `ReadWWrite` message
-   * @returns {Message} decoded message
-   */
   static decodeMessage(encodedMessage) {
     const message = JSON.parse(encodedMessage)
     if(message.buffer === undefined) { return message }
