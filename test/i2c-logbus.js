@@ -1,4 +1,4 @@
-import { I2CBus } from '@johntalton/and-other-delights'
+//import { I2CBus } from '@johntalton/and-other-delights'
 
 export class I2CLogBus /*extends I2CBus*/ {
   static from(bus) { return new I2CLogBus(bus) }

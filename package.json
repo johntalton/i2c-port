@@ -16,7 +16,7 @@
   ],
   "types": "lib/index.d.ts",
   "dependencies": {
-    "@johntalton/and-other-delights": "file:../and-other-delights"
+    "@johntalton/and-other-delights": "github:johntalton/and-other-delights#module"
   },
   "devDependencies": {
     "@johntalton/boschieu": "^4.0.0",

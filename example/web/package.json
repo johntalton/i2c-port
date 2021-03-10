@@ -4,7 +4,7 @@
     "description": "A demo of running a WebSocket service for I2C transactions",
     "type": "module",
     "dependencies": {
-        "@johntalton/and-other-delights": "file:../../../and-other-delights",
-        "@johntalton/tca9548a": "file:../../../tca9548a"
+        "@johntalton/and-other-delights": "github:johntalton/and-other-delights#module",
+        "@johntalton/tca9548a": "github:johntalton/tca9548a#module"
     }
 }

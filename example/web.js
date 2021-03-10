@@ -123,7 +123,9 @@ if(!hostOnly) {
     }
   }
 
-  const serviceUrl = './example/i2c-script-worker.js' // './example/service-worker.js'
+  //const serviceUrl = './example/i2c-script-worker.js'
+  const serviceUrl = './example/service-worker.js'
+
   const i2cWorker = new Worker(serviceUrl, {
     // name: 'I2C',
     // type: 'module',
