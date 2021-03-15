@@ -38,6 +38,7 @@ export class I2CPort {
       await bus.sendByte(address, byteValue)
       return { ...echo, type: 'writeResult', bytesWritten: 1 }
     } catch (e) {
+      console.log({ message, e })
       return { ...echo, type: 'error', why: 'sendByte: ' + e.errno + e.message }
     }
   }
@@ -50,6 +51,7 @@ export class I2CPort {
       const { bytesRead, buffer } = await bus.i2cRead(address, length, in_buffer)
       return { ...echo, type: 'readResult', bytesRead, buffer: buffer.slice(0, bytesRead) }
     } catch (e) {
+      console.warn({ message, e })
       return { ...echo, type: 'error', why: 'read: ' + e.message }
     }
   }
@@ -61,6 +63,7 @@ export class I2CPort {
       const { bytesWritten } = await bus.i2cWrite(address, buffer.byteLength, buffer)
       return { ...echo, type: 'writeResult', bytesWritten }
     } catch (e) {
+      console.log({ message, e })
       return { ...echo, type: 'error', why: 'write: ' + e.message }
     }
   }
@@ -73,6 +76,7 @@ export class I2CPort {
       const { bytesRead, buffer } = await bus.readI2cBlock(address, cmd, length, in_buffer)
       return { ...echo, type: 'readResult', bytesRead, buffer: buffer.slice(0, bytesRead) }
     } catch (e) {
+      console.log({ message, e })
       return { ...echo, type: 'error', why: 'readBlock: ' + e.errno + ' ' + e.message }
     }
   }
@@ -84,6 +88,7 @@ export class I2CPort {
       const { bytesWritten } = await bus.writeI2cBlock(address, cmd, buffer.byteLength, buffer)
       return { ...echo, type: 'writeResult', bytesWritten }
     } catch (e) {
+      console.log({ message, e })
       return { ...echo, type: 'error', why: 'writeBlock: ' + e.message }
     }
   }
