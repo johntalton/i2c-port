@@ -20,12 +20,8 @@
   },
   "devDependencies": {
     "@johntalton/eslint-config": "^2.0.0",
-    "@johntalton/i2c-bus-mcp2111": "file:../i2c-bus-mcp2221",
-    "@johntalton/mcp2221": "file:../mcp2221",
     "@types/chai": "^4.2.14",
-    "@types/i2c-bus": "^5.1.0",
     "@types/mocha": "^8.2.0",
-    "@types/node": "^14.14.10",
     "@typescript-eslint/eslint-plugin": "^4.11.0",
     "c8": "^7.3.5",
     "chai": "^4.2.0",
@@ -40,17 +36,10 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-security": "^1.4.0",
     "eslint-plugin-spellcheck": "^0.0.17",
-    "express": "^4.17.1",
-    "i2c-bus": "^5.2.1",
     "mocha": "^8.2.1",
-    "morgan": "^1.10.0",
-    "node-hid": "^2.1.1",
-    "nodemon": "^2.0.6",
     "source-map-support": "^0.5.19",
     "ts-node": "^9.1.1",
-    "typescript": "^4.1.2",
-    "usb-detection": "github:Lan-Hekary/node-usb-detection",
-    "ws": "^7.4.0"
+    "typescript": "^4.1.2"
   },
   "scripts": {
     "lint": "npm --silent run lint:ts",
@@ -59,25 +48,8 @@
     "build:watch": "npm run build -- -w",
     "test": "npm run test:mocha",
     "test:mocha": "mocha -r ts-node/register test/**/*.spec.js",
-    "example:test": "node example/test.js",
-    "example:ieu": "node example/ieu.js",
-    "web": "node example/web.js",
-    "web:host": "node example/web.js --hostOnly",
-    "web:watch": "nodemon example/web.js",
     "coverage": "npm --silent run coverage:c8",
     "coverage:c8": "c8 --check-coverage --all --lines 75 --functions 5 --branches 85 --include=lib/**/*.js npm --silent run test:mocha -- --no-parallel --reporter min"
-  },
-  "nodemonConfig": {
-    "ignore": [
-      "**/*.spec.ts",
-      ".git",
-      ".vscode",
-      "node_modules"
-    ],
-    "watch": [
-      "src",
-      "example"
-    ]
   },
   "mocha": {
     "spec": [
@@ -102,7 +74,7 @@
     ],
     "ignorePatterns": "example/**",
     "env": {
-      "node": true
+      "node": false
     },
     "rules": {
       "max-len": [

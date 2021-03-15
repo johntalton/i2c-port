@@ -1,7 +1,5 @@
 /* eslint-disable immutable/no-this */
 /* eslint-disable fp/no-this */
-import { MessageChannel, MessagePort } from 'worker_threads'
-
 import {
   I2CAddress, I2CBufferSource,
   I2CBus,

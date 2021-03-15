@@ -1,4 +1,4 @@
-import { I2CPort } from '@johntalton/i2c-port'
+import { I2CPort } from './port.js'
 
 export function i2cMultiPortService(servicePort, bus) {
 
