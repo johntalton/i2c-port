@@ -16,7 +16,7 @@
   ],
   "types": "lib/index.d.ts",
   "devDependencies": {
-    "@johntalton/and-other-delights": "^3.0.2",
+    "@johntalton/and-other-delights": "^6.0.0",
     "@johntalton/boschieu": "^4.0.0",
     "@johntalton/eslint-config": "github:johntalton/eslint-config",
     "@types/chai": "^4.2.14",
