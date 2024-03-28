@@ -1,8 +1,8 @@
-import { MessageChannel, MessagePort } from 'worker_threads'
-import { setTimeout, clearTimeout } from 'timers'
-
+/* eslint-disable immutable/no-this */
+/* eslint-disable fp/no-this */
 import {
-  I2CBus, I2CBusNumber, I2CAddress,
+  I2CAddress, I2CBufferSource,
+  I2CBus,
   I2CReadResult, I2CWriteResult
 } from '@johntalton/and-other-delights'
 
@@ -10,16 +10,16 @@ import { ReadWrite } from './messages'
 
 export class I2CPortBus implements I2CBus {
   readonly port: MessagePort
-  readonly busNumber: I2CBusNumber
   readonly namespace: string
+  readonly name: string
 
-  static openPromisified(providerPort: MessagePort, busNumber: I2CBusNumber): Promise<I2CPortBus> {
-    return Promise.resolve(new I2CPortBus(providerPort, busNumber))
+  static openPromisified(providerPort: MessagePort): Promise<I2CPortBus> {
+    return Promise.resolve(new I2CPortBus(providerPort))
   }
 
-  private constructor(port: MessagePort, busNumber: I2CBusNumber) {
+  private constructor(port: MessagePort) {
+    this.name = ''
     this.port = port
-    this.busNumber = busNumber
     this.namespace = ''
   }
 
@@ -42,7 +42,8 @@ export class I2CPortBus implements I2CBus {
       })
 
       if('buffer' in call && call.buffer) {
-        port.postMessage(call, [ call.buffer.buffer ])
+        const transferBuffer = ArrayBuffer.isView(call.buffer) ? call.buffer.buffer : call.buffer
+        port.postMessage(call, [ transferBuffer ])
       } else {
         port.postMessage(call)
       }
@@ -55,56 +56,50 @@ export class I2CPortBus implements I2CBus {
     return I2CPortBus.fire(mc.port1, call)
   }
 
-
-  sendByte(address: I2CAddress, byte: number): Promise<void> {
+  sendByte(address: I2CAddress, byteValue: number): Promise<void> {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
       type: 'sendByte',
-      bus: this.busNumber,
       address,
-      byte
+      byteValue
     })
   }
 
-  readI2cBlock(address: I2CAddress, cmd: number, length: number, _buffer: Buffer): Promise<I2CReadResult> {
+  readI2cBlock(address: I2CAddress, cmd: number, length: number, _bufferSource: never): Promise<I2CReadResult> {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
-      type: 'readBlock',
-      bus: this.busNumber,
+      type: 'readI2cBlock',
       address,
       cmd,
       length
     })
   }
 
-  writeI2cBlock(address: I2CAddress, cmd: number, length: number, buffer: Buffer): Promise<I2CWriteResult> {
+  writeI2cBlock(address: I2CAddress, cmd: number, length: number, bufferSource: I2CBufferSource): Promise<I2CWriteResult> {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
-      type: 'writeBlock',
-      bus: this.busNumber,
+      type: 'writeI2cBlock',
       address,
       cmd,
-      buffer: buffer.slice(0, length)
+      buffer: bufferSource
     })
   }
 
-  i2cRead(address: I2CAddress, length: number, _buffer: Buffer): Promise<I2CReadResult> {
+  i2cRead(address: I2CAddress, length: number, _bufferSource: never): Promise<I2CReadResult> {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
-      type: 'read',
-      bus: this.busNumber,
+      type: 'i2cRead',
       address,
       length
     })
   }
 
-  i2cWrite(address: I2CAddress, length: number, buffer: Buffer): Promise<I2CWriteResult> {
+  i2cWrite(address: I2CAddress, length: number, bufferSource: I2CBufferSource): Promise<I2CWriteResult> {
     return I2CPortBus.sideChannelFire(this.port, {
       namespace: this.namespace,
-      type: 'write',
-      bus: this.busNumber,
+      type: 'i2cWrite',
       address,
-      buffer: buffer.slice(0, length)
+      buffer: bufferSource
     })
   }
 }
