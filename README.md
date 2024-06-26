@@ -14,7 +14,7 @@ This allows the `I2CBus` api to be used in a wide range of deployment cases.
 
 It can also be using with bus Multiplexing such as [@johntalton/i2c-bus-tca9548a](https://github.com/johntalton/i2c-bus-tca9548a) that adheres to the `I2CBus` interface.  As well as using [i2c-bus](https://github.com/fivdi/i2c-bus) as the default concrete/base implementation.
 
-## Provided Abstraction
+# Provided Abstraction
 
 Key is providing multiple abstraction layers.
 
@@ -24,11 +24,11 @@ Key is providing multiple abstraction layers.
 
 The corresponding `WebSocket` to `MessagePort` example can be run to provide this service.
 
-### `Message`
+## `Message`
 
 The **Message** definition layer provides a naming convention and contract without implementation details. It is ideal for abstracting the service at each layer.
 
-### `I2CPort`
+## `I2CPort`
 
 The port utility provides a `handleMessage` function.
 By which, given a provided `I2CBus` and `Message`, will execute that bus command.
@@ -58,7 +58,7 @@ console.log(result)
 
 This message to bus method and back is particularly useful when abstracting the `I2CBus` class methods accros a `MessagePort` implementation such as `I2CPortBbus`.
 
-### `I2CPortBus`
+## `I2CPortBus`
 
 The implementation of `I2CBus` allows for creating a instance classes which use the generic `I2CBus` interface and alow them to run atop of a `MessagePort`.
 
@@ -66,22 +66,7 @@ Useful application (as seen in the examples) of this are:
     - Workers: allow for running `I2CBus` implementation and Sensor across worker (shared i2c service for multiple workers)
     - WebSockets: allow for transmistion of `Message` accross a WebSocket to allow for remote i2c Sensor implementations.
 
-```javascript
-
-const bus = I2CPortBus.openPromisified()
-```
-
 
 ## ArrayBuffer and friends
 
 The current implementation attempts to preserve a common `ArrayBuffer` interface across the implementation in order to provide flexibility
-
-## Direction
-
-Having a full `I2CWebBus` that implements `I2CBus` enables moving other Sensor implementations that currently use the `I2CBus` over to a web-safe version. This will increase code portability and quality as wall as validate many of the timing and latency issues that are otherwise not seen locally in most cases.
-
-Further mocking and virtualizing can be provided once a common `WebSocket` message api is established. Providing virtual sensor and other services in a web-centric fashion.
-
-Single 1:1 calls allow for basic interactions, however, extending the message with 'scripting' style operation (aka run a set of dynamic command on the server, a script) could provide performant solution when latency of the transit layer becomes an issue.
-This could be extended to enable service-side interactions such as keep alive or default access polling. Other common data-fetch or read-comp-trigger features could be added.
-Leveraging Server Sent Event operation could also extends the interaction flexibility.
