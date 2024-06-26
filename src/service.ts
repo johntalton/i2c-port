@@ -6,17 +6,24 @@ export class I2CPortService {
   static from(servicePort: MessagePort, bus: I2CBus): void {
     const clients = new Set()
 
-    servicePort.on('message', connectMessage => {
+    servicePort.addEventListener('message', event => {
+      const { data: connectMessage } = event
+    // servicePort.on('message', connectMessage => {
+    // console.log(connectMessage)
       const { port } = connectMessage
 
       clients.add(port)
 
-      port.on('message', async clientMessage => {
+      port.addEventListener('message', async event => {
+        const { data: clientMessage } = event
+
+      // port.on('message', async clientMessage => {
         const result = await I2CPort.handleMessage(bus, clientMessage)
         port.postMessage(result, result.buffer !== undefined ? [ result.buffer ] : [])
       })
 
-      port.on('close', () => {
+      port.addEventListener('close', () => {
+      // port.on('close', () => {
         if(!clients.has(port)) { return }
 
         clients.delete(port)
@@ -24,6 +31,7 @@ export class I2CPortService {
       })
     })
 
-    servicePort.on('close', () => clients.forEach(p => p.close()))
+    servicePort.addEventListener('close', () => clients.forEach(p => p.close()))
+    // servicePort.on('close', () => clients.forEach(p => p.close()))
   }
 }

@@ -1,8 +1,10 @@
-export type PortBuffer = ArrayBuffer | ArrayBufferView | SharedArrayBuffer
+export type PortBuffer = ArrayBufferLike | ArrayBufferView
+export type Address = number
+
 export type WithNamespace = { namespace: string | '' }
 export type WithType = { type: string }
 export type WithOpaque = { opaque?: string }
-export type WithAddress = { address: number }
+export type WithAddress = { address: Address }
 export type WithCommand = { cmd: number } & WithAddress
 export type WithBuffer = { buffer: PortBuffer }
 export type WithInBuffer = { buffer?: PortBuffer }
@@ -17,6 +19,7 @@ export type Error = { type: 'error', why: string } & Message
 export type Success = { type: 'success' } & Message
 
 // core request message
+export type Scan = { type: 'scan' } & Message
 export type SendByte = { type: 'sendByte', byteValue: number } & Message
 export type Read = { type: 'i2cRead' } & WithInBuffer & WithLength & Message
 export type Write = { type: 'i2cWrite' } & WithBuffer & WithOutLength & Message
@@ -24,9 +27,10 @@ export type ReadBlock = { type: 'readI2cBlock' } & WithInBuffer & WithLength & W
 export type WriteBlock = { type: 'writeI2cBlock' } & WithBuffer & WithOutLength & WithCommand & Message
 
 // core results
+export type ScanResult = { addresses: Array<Address> } & Message | Error
 export type ReadResult = { type: 'readResult', bytesRead: number } & WithResultBuffer & Message | Error
 export type WriteResult = { type: 'writeResult', bytesWritten: number } & Message | Error
 
 // union-ed core message that are useful sometimes
-export type ReadWrite = SendByte | Read | Write | ReadBlock | WriteBlock
-export type Result = ReadResult | WriteResult | Success | Error
+export type ReadWrite = Scan | SendByte | Read | Write | ReadBlock | WriteBlock
+export type Result = ScanResult | ReadResult | WriteResult | Success | Error

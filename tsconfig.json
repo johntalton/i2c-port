@@ -6,7 +6,6 @@
         "alwaysStrict": false,
 
         "incremental": true,
-        "watch": false,
 
         "target": "ESNext",
         "module": "ESNext",

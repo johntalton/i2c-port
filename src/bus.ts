@@ -28,23 +28,33 @@ export class I2CPortBus implements I2CBus {
   private static fire<R>(port: MessagePort, call: ReadWrite): Promise<R> {
     return new Promise((resolve, reject) => {
       const timeoutMS = 1000 * 2
-      const timer = setTimeout(() => reject(new Error('timeout')), timeoutMS)
+      const timer = setTimeout(() => {
+        port.close()
+        reject(new Error('timeout'))
+      }, timeoutMS)
 
-      port.on('message', message => {
+      port.addEventListener('message', event => {
+        const { data: message } = event
+      //port.on('message', message => {
         if(message.type === 'error') { reject(new Error(message.why)); return }
+        // console.log('resolving with', message)
         resolve(message)
         clearTimeout(timer)
         port.close()
       })
-      port.on('close', () => {
+
+      port.addEventListener('close', () => {
+      // port.on('close', () => {
         clearTimeout(timer)
         reject(new Error('closed'))
       })
 
       if('buffer' in call && call.buffer) {
+        // console.log('return with buffer', call)
         const transferBuffer = ArrayBuffer.isView(call.buffer) ? call.buffer.buffer : call.buffer
         port.postMessage(call, [ transferBuffer ])
       } else {
+        // console.log('return')
         port.postMessage(call)
       }
     })
@@ -52,6 +62,7 @@ export class I2CPortBus implements I2CBus {
 
   private static async sideChannelFire<R>(port: MessagePort, call: ReadWrite): Promise<R> {
     const mc = new MessageChannel()
+    // console.log('sideChannelFire')
     port.postMessage({ port: mc.port2 }, [ mc.port2 ])
     return I2CPortBus.fire(mc.port1, call)
   }

@@ -9,6 +9,7 @@ export class I2CPort {
     const { type } = message
 
     switch(type) {
+    case 'scan': return I2CPort.scan(bus, message as m.Scan)
     case 'sendByte': return I2CPort.sendByte(bus, message as m.SendByte)
     case 'i2cRead': return I2CPort.read(bus, message as m.Read)
     case 'i2cWrite': return I2CPort.write(bus, message as m.Write)
@@ -32,6 +33,15 @@ export class I2CPort {
     return new ArrayBuffer(length)
   }
 
+  private static async scan(bus: I2CBus, message: m.Message): Promise<m.ScanResult> {
+    const echo = I2CPort.echoMessage(message)
+    try {
+      return bus.scan()
+    }
+    catch(e) {
+      return { ...echo, type: 'error', why: 'sendByte: ' + e.errno + e.message }
+    }
+  }
 
   private static async sendByte(bus: I2CBus, message: m.SendByte): Promise<m.WriteResult> {
     const { address, byteValue } = message
@@ -58,9 +68,11 @@ export class I2CPort {
 
   private static async write(bus: I2CBus, message: m.Write): Promise<m.WriteResult> {
     const { address, buffer } = message
+    // console.log(buffer)
     const echo = I2CPort.echoMessage(message)
     try {
       const { bytesWritten } = await bus.i2cWrite(address, buffer.byteLength, buffer)
+      // console.log('write', { bytesWritten })
       return { ...echo, type: 'writeResult', bytesWritten }
     } catch (e) {
       return { ...echo, type: 'error', why: 'write: ' + e.message }

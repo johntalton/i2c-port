@@ -1,124 +1,28 @@
 {
   "name": "@johntalton/i2c-port",
-  "version": "3.0.0",
-  "description": "",
+  "version": "4.0.0",
+  "author": "johntalton@gmail.com",
+  "license": "MIT",
+  "type": "module",
   "main": "./lib/index.js",
   "exports": {
     "import": "./lib/index.js",
     "require": "./lib/index.js"
   },
-  "type": "module",
   "files": [
     "lib/**/*.js",
     "lib/**/*.d.ts",
     "lib/**/*.d.ts.map",
     "lib/**/*.js.map"
   ],
-  "types": "lib/index.d.ts",
+  "scripts": {
+   "build": "tsc -p .",
+    "build:watch": "npm run build -- -w"
+  },
   "dependencies": {
-    "@johntalton/and-other-delights": "github:johntalton/and-other-delights#module"
+    "@johntalton/and-other-delights": "^8.1.0"
   },
   "devDependencies": {
-    "@johntalton/eslint-config": "^2.0.0",
-    "@types/chai": "^4.2.14",
-    "@types/mocha": "^8.2.0",
-    "@typescript-eslint/eslint-plugin": "^4.11.0",
-    "c8": "^7.3.5",
-    "chai": "^4.2.0",
-    "eslint": "^7.15.0",
-    "eslint-plugin-fp": "^2.3.0",
-    "eslint-plugin-functional": "^3.1.0",
-    "eslint-plugin-immutable": "^1.0.0",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-mocha": "^8.0.0",
-    "eslint-plugin-no-loops": "^0.3.0",
-    "eslint-plugin-no-use-extend-native": "^0.5.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-security": "^1.4.0",
-    "eslint-plugin-spellcheck": "^0.0.17",
-    "mocha": "^8.2.1",
-    "source-map-support": "^0.5.19",
-    "ts-node": "^9.1.1",
-    "typescript": "^4.1.2"
-  },
-  "peerDependencies": {
-    "node-hid": "^2.1.1"
-  },
-  "scripts": {
-    "lint": "npm --silent run lint:ts",
-    "lint:ts": "./node_modules/.bin/eslint --no-inline-config --report-unused-disable-directives --ext .ts src/*.ts",
-    "build": "tsc -p .",
-    "build:watch": "npm run build -- -w",
-    "test": "npm run test:mocha",
-    "test:mocha": "mocha -r ts-node/register test/**/*.spec.js",
-    "coverage": "npm --silent run coverage:c8",
-    "coverage:c8": "c8 --check-coverage --all --lines 75 --functions 5 --branches 85 --include=lib/**/*.js npm --silent run test:mocha -- --no-parallel --reporter min"
-  },
-  "mocha": {
-    "spec": [
-      "test/*.spec.js"
-    ],
-    "grep": "@broken|@slow",
-    "invert": true,
-    "parallel": true,
-    "watch": false,
-    "sort": false,
-    "forbitOnly": true,
-    "check-leaks": true,
-    "global": [],
-    "require": [
-      "source-map-support/register",
-      "ts-node/register/transpile-only"
-    ]
-  },
-  "eslintConfig": {
-    "extends": [
-      "@johntalton/eslint-config/ts"
-    ],
-    "ignorePatterns": "example/**",
-    "env": {
-      "node": false
-    },
-    "rules": {
-      "max-len": [
-        "warn",
-        {
-          "code": 120
-        }
-      ],
-      "fp/no-class": "off",
-      "fp/no-nil": "off",
-      "fp/no-mutation": "off",
-      "immutable/no-mutation": "off",
-      "fp/no-unused-expression": "off",
-      "spellcheck/spell-checker": [
-        "error",
-        {
-          "minLength": 4,
-          "skipWords": [
-            "favicon",
-            "namespace",
-            "promisified",
-            "Uint",
-            "alloc",
-            "errno",
-            "addr",
-            "argv",
-            "morgan",
-            "uuidv4"
-          ]
-        }
-      ]
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/johntalton/i2c-port.git"
-  },
-  "author": "johntalton@gmail.com",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/johntalton/i2c-port/issues"
-  },
-  "homepage": "https://github.com/johntalton/i2c-port#readme"
+    "typescript": "^5.5.2"
+  }
 }
