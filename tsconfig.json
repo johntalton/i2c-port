@@ -1,13 +1,15 @@
 {
+    "$schema": "https://json.schemastore.org/tsconfig",
+
     "compilerOptions": {
+        "emitBOM": false,
         "alwaysStrict": false,
 
         "incremental": true,
-        "watch": false,
 
         "target": "ESNext",
         "module": "ESNext",
-        "lib": ["ESNext"],
+        "lib": ["ESNext", "dom"],
 
         "strict": true,
         "noImplicitAny": true,
