@@ -4,7 +4,7 @@ import { I2CPort } from './port.js'
 
 export class I2CPortService {
   static from(servicePort: MessagePort, bus: I2CBus): void {
-    const clients = new Set()
+    const clients = new Set<MessagePort>()
 
     servicePort.addEventListener('message', event => {
       const { data: connectMessage } = event
@@ -14,12 +14,22 @@ export class I2CPortService {
 
       clients.add(port)
 
-      port.addEventListener('message', async event => {
+      port.addEventListener('message', (event: MessageEvent) => {
         const { data: clientMessage } = event
 
       // port.on('message', async clientMessage => {
-        const result = await I2CPort.handleMessage(bus, clientMessage)
-        port.postMessage(result, result.buffer !== undefined ? [ result.buffer ] : [])
+        I2CPort.handleMessage(bus, clientMessage)
+          .then(result => {
+            // console.log('result', result)
+            if('buffer' in result) {
+              port.postMessage(result, [ ArrayBuffer.isView(result.buffer) ? result.buffer.buffer : result.buffer ])
+            }
+            else {
+              port.postMessage(result)
+            }
+
+          })
+          .catch(e => console.warn(e))
       })
 
       port.addEventListener('close', () => {

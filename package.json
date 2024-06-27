@@ -10,6 +10,7 @@
     "require": "./lib/index.js"
   },
   "files": [
+    "src/**/*.ts",
     "lib/**/*.js",
     "lib/**/*.d.ts",
     "lib/**/*.d.ts.map",
@@ -20,7 +21,7 @@
     "build:watch": "npm run build -- -w"
   },
   "dependencies": {
-    "@johntalton/and-other-delights": "^8.1.0"
+    "@johntalton/and-other-delights": "^8.3.0"
   },
   "devDependencies": {
     "typescript": "^5.5.2"
