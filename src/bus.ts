@@ -8,20 +8,26 @@ import {
 
 import { Request } from './messages.js'
 
+export type I2CPortBusOptions = {
+  namespace: string,
+  name: string
+}
+
+
 export class I2CPortBus implements I2CBus {
   readonly #port: MessagePort
   readonly #namespace: string
   readonly #name: string
 
-  static from(port: MessagePort, options) {
+  static from(port: MessagePort, options: I2CPortBusOptions) {
     return new I2CPortBus(port, options)
   }
 
-  static openPromisified(providerPort: MessagePort, options): Promise<I2CPortBus> {
+  static openPromisified(providerPort: MessagePort, options: I2CPortBusOptions): Promise<I2CPortBus> {
     return Promise.resolve(new I2CPortBus(providerPort, options))
   }
 
-  private constructor(port: MessagePort, options) {
+  private constructor(port: MessagePort, options: I2CPortBusOptions) {
     this.#port = port
     this.#namespace = options?.namespace ?? ''
     this.#name = options?.name ?? 'I²CPortBus'
