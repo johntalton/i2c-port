@@ -9,7 +9,7 @@ export type Message = WithNamespace & WithOpaque & WithType
 
 //
 export type WithAddress = { address: Address }
-export type WithCommand = { cmd: number } & WithAddress
+export type WithCommand = { cmd: number | [ number, number ] } & WithAddress
 export type WithBuffer = { buffer: PortBuffer }
 export type WithInBuffer = { buffer?: PortBuffer }
 export type WithResultBuffer = { buffer: PortBuffer }

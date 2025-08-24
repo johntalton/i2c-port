@@ -1,13 +1,13 @@
-import { I2CBus, I2CScannableBus } from '@johntalton/and-other-delights'
+import { I2CBus } from '@johntalton/and-other-delights'
 
 import * as m from './messages.js'
 
 export class I2CPort {
-  static async handleMessage(bus: I2CBus|I2CScannableBus, message: m.Request): Promise<m.Result> {
+  static async handleMessage(bus: I2CBus, message: m.Request): Promise<m.Result> {
     const { type } = message
 
     switch(type) {
-    case 'scan': return I2CPort.scan(bus as I2CScannableBus, message as m.Scan)
+    case 'scan': return I2CPort.scan(bus, message as m.Scan)
     case 'sendByte': return I2CPort.sendByte(bus, message as m.SendByte)
     case 'i2cRead': return I2CPort.read(bus, message as m.Read)
     case 'i2cWrite': return I2CPort.write(bus, message as m.Write)
@@ -37,7 +37,7 @@ export class I2CPort {
     return new ArrayBuffer(length)
   }
 
-  private static async scan(bus: I2CScannableBus, message: m.Scan): Promise<m.ScanResult> {
+  private static async scan(bus: I2CBus, message: m.Scan): Promise<m.ScanResult> {
     const echo = I2CPort.echoMessageWithoutAddress(message)
     if(!('scan' in bus)) { return { ...echo, type: 'error', why: 'scan not supported by underlying bus' }}
     try {

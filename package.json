@@ -1,6 +1,6 @@
 {
   "name": "@johntalton/i2c-port",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "author": "johntalton@gmail.com",
   "license": "MIT",
   "type": "module",
@@ -21,9 +21,9 @@
     "build:watch": "npm run build -- -w"
   },
   "dependencies": {
-    "@johntalton/and-other-delights": "^8.3.0"
+    "@johntalton/and-other-delights": "^8.6.4"
   },
   "devDependencies": {
-    "typescript": "^5.5.2"
+    "typescript": "^5.9.2"
   }
 }
