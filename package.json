@@ -1,6 +1,6 @@
 {
   "name": "@johntalton/i2c-port",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "author": "johntalton@gmail.com",
   "license": "MIT",
   "type": "module",
@@ -25,5 +25,8 @@
   },
   "devDependencies": {
     "typescript": "^5.9.2"
+  },
+  "repository": {
+    "url": "https://github.com/johntalton/i2c-port"
   }
 }
